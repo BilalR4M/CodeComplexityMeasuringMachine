@@ -7,31 +7,29 @@ function HomePage() {
             <div className="w-full text-white bg-gradient-to-r from-green-400 to-green-900">
                 <div className="flex min-h-screen flex-col items-center justify-center gap-16">
                     {/* Hero Section */}
-                    <div className="my-12 flex h-full min-w-full flex-col items-center justify-evenly sm:flex-row sm:pt-0 ">
-                        <div className="flex w-full flex-col items-center text-center sm:w-1/2">
-                            <h1 className="text-4xl font-bold text-white">
-                                Simplify Your Code with Our Complexity Measuring
-                                Tool
-                            </h1>
-                            <p className="mt-4 text-lg text-gray-200">
-                                Automatically analyze your code for complexity,
-                                optimize performance, and enhance
-                                maintainability.
-                            </p>
-                            <button className="mt-8 rounded-lg bg-[#425e33] px-6 py-3 text-white font-bold text- hover:bg-[#314626] ">
-                                Get Started
-                            </button>
-                        </div>
-                        <div className="flex w-full items-center justify-center sm:w-1/2">
-                            <img
-                                src={ccmm}
-                                alt="Code complexity illustration"
-                                className="w-full max-w-lg drop-shadow-lg"
-                            />
-                        </div>
+                    <div className="my-12 flex h-full min-w-full flex-col items-center justify-evenly sm:flex-row sm:pt-0">
+                    <div className="glass-effect flex w-full flex-col items-center text-center sm:w-1/2 p-8">
+                        <h1 className="text-4xl font-bold text-white">
+                        Simplify Your Code with Our Complexity Measuring Tool
+                        </h1>
+                        <p className="mt-4 text-lg text-gray-200">
+                        Automatically analyze your code for complexity, optimize performance, and enhance maintainability.
+                        </p>
+                        <button className="mt-8 rounded-lg bg-[#425e33] px-6 py-3 text-white font-bold hover:bg-[#314626]">
+                        Get Started
+                        </button>
+                    </div>
+                    <div className="flex w-full items-center justify-center sm:w-1/2">
+                        <img
+                        src={ccmm}
+                        alt="Code complexity illustration"
+                        className="w-full max-w-lg drop-shadow-lg"
+                        />
+                    </div>
                     </div>
                 </div>
             </div>
+
 
             {/* Features Section */}
             <div className="my-12 flex w-full flex-col items-center">
