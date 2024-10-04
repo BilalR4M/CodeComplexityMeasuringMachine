@@ -1,0 +1,71 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Log files
+*.log
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+# https://github.com/takari/maven-wrapper#usage-without-binary-jar
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+build/
+!gradle-wrapper.jar
+gradle-app.setting
+
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+# Libraries and other IDEA-specific files
+.idea/libraries/
+.idea/shelf/
+.idea/workspace.xml
+.idea/modules.xml
+.idea/gradle.xml
+
+# User-specific files
+.idea/*.xml
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/projectView.xml
+.idea/encodings.xml
+.idea/find.xml
+.idea/compiler.xml
+
+# Temporary files
+*.swp
+*~.nib
+*.bak
+*.orig
+*.tmp
+*.rej
+
+# Package Files
+
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Others
+*.env
