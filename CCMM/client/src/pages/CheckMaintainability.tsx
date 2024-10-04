@@ -128,7 +128,7 @@ const ComplexityCalculator: FC = () => {
 
     return (
         <div
-            className={`flex min-h-screen items-center justify-center bg-gray-800 bg${color}`}
+            className={`flex min-h-screen items-center justify-center bg-gray-800`}
         >
             <div className="w-full max-w-2xl rounded-lg bg-gray-900 p-6 shadow-md">
                 <h1 className="mb-6 text-center text-2xl font-bold">

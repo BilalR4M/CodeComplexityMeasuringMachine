@@ -4,10 +4,10 @@ import ccmm from "@/images/ccmm.png"
 function HomePage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center gap-16">
-            <div className="w-full  text-white">
+            <div className="w-full text-white bg-gradient-to-r from-green-400 to-green-900">
                 <div className="flex min-h-screen flex-col items-center justify-center gap-16">
                     {/* Hero Section */}
-                    <div className="my-12 flex h-full min-w-full flex-col items-center justify-evenly sm:flex-row sm:pt-0">
+                    <div className="my-12 flex h-full min-w-full flex-col items-center justify-evenly sm:flex-row sm:pt-0 ">
                         <div className="flex w-full flex-col items-center text-center sm:w-1/2">
                             <h1 className="text-4xl font-bold text-white">
                                 Simplify Your Code with Our Complexity Measuring
@@ -18,7 +18,7 @@ function HomePage() {
                                 optimize performance, and enhance
                                 maintainability.
                             </p>
-                            <button className="mt-8 rounded-lg bg-[#648f4d] px-6 py-3 text-white hover:bg-[#3f5b30]">
+                            <button className="mt-8 rounded-lg bg-[#425e33] px-6 py-3 text-white font-bold text- hover:bg-[#314626] ">
                                 Get Started
                             </button>
                         </div>
