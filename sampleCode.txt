@@ -1,0 +1,43 @@
+public class TwoMethodsWithNestedLoop {
+
+    public static void main(String[] args) {
+        // Call the method to find the sum of two numbers
+        int sumResult = sum(10, 20);
+        System.out.println("Sum: " + sumResult);
+
+        // Call the method to print a multiplication table (nested loop)
+        printMultiplicationTable(5);
+
+        // Call the method to check if a number is even or odd
+        boolean isEvenResult = isEven(15);
+        System.out.println("Is the number 15 even? " + isEvenResult);
+    }
+
+    // Method to calculate the sum of two integers
+    public static int sum(int num1, int num2) {
+        // Return the sum of two numbers
+        return num1 + num2;
+    }
+
+    // Method to print a multiplication table using nested loops
+    public static void printMultiplicationTable(int size) {
+        System.out.println("Multiplication Table:");
+
+        // Outer loop for the rows
+        for (int i = 1; i <= size; i++) {
+            // Inner loop for the columns
+            for (int j = 1; j <= size; j++) {
+                // Print the product of i and j, formatted with spaces
+                System.out.print(i * j + "\t");
+            }
+            // Move to the next line after printing one row
+            System.out.println();
+        }
+    }
+
+    // Method to check if a number is even
+    public static boolean isEven(int number) {
+        // Return true if the number is even, otherwise false
+        return number % 2 == 0;
+    }
+}
