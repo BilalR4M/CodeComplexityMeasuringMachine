@@ -150,6 +150,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       verify:     `mvn -B -ntp -pl ccmm-core test`
       size:       S
       issue:      #10
+      pr:         #37
 
 #### P1-T06 Loop nesting
 - [x] P1-T06 Loop nesting
