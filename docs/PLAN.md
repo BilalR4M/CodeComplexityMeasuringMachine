@@ -300,6 +300,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
       verify:     `mvn -B -ntp -pl ccmm-app -am test`
       size:       L
       issue:      #20
+      pr:         #46
 
 #### P3-T04 Metrics panel
 - [ ] P3-T04 Metrics panel
