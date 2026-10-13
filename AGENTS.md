@@ -11,13 +11,11 @@ Desktop IDE written in Java with live code-complexity metrics. Successor to the 
 - Users: developer productivity (live metrics) and code review / quality gates (CLI, PR comments, reports).
 - v1 includes collaboration: co-editing + chat + presence. Per-file rooms keyed by project-relative path; file tree not synced.
 - Scale target: hundreds of files per project.
-
-## Pending decisions (docs/adr) — proposed defaults, NOT accepted
-- ADR-0002 server-authoritative OT for co-editing. No collaboration implementation until accepted.
-- ADR-0004 metric formulas (JavaParser). Legacy regex results are not the oracle.
-- ADR-0005 relay hosting: operators run the ghcr.io image.
-- ADR-0006 room auth: invite token.
-- ADR-0007 cognitive complexity is post-v1.
+- ADR-0002: server-authoritative OT for co-editing.
+- ADR-0004: JavaParser metric formulas. Legacy regex results are not the oracle.
+- ADR-0005: operators run the ghcr.io relay image. No hosted multi-tenant relay.
+- ADR-0006: project rooms use an invite token.
+- ADR-0007: cognitive complexity is post-v1.
 
 ## Read order
 | When | Read |

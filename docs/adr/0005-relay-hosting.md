@@ -1,5 +1,5 @@
 # ADR-0005: Relay hosting
-Status: proposed (default pending owner decision)
+Status: accepted
 
 ## Context
 Co-editing, chat, and presence need a process that every participant can reach. The release workflow already builds `ghcr.io/<owner>/ccmm-collab-server` from `ccmm-collab-server/Dockerfile`.

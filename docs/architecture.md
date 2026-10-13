@@ -1,6 +1,6 @@
 # Architecture
 
-Signature-level design for the modules in `AGENTS.md`. No implementation in this document. Formulas are ADR-0004 (proposed). Collaboration is ADR-0002 (proposed) and is not built while that ADR is proposed.
+Signature-level design for the modules in `AGENTS.md`. No implementation in this document. Formulas are ADR-0004. Collaboration is ADR-0002.
 
 ## Modules
 
@@ -108,7 +108,7 @@ Missing `.ccmm.yml` is an error for `gate`, not a pass.
 
 ## Collaboration
 
-Specified so Phase 4 has a target. Not scheduled while ADR-0002, ADR-0005, and ADR-0006 are proposed.
+Specified for Phase 4. ADR-0002, ADR-0005, and ADR-0006 are accepted.
 
 ```mermaid
 flowchart LR

@@ -1,5 +1,5 @@
 # ADR-0006: Room authentication
-Status: proposed (default pending owner decision)
+Status: accepted
 
 ## Context
 The legacy Socket.IO server joins anyone who knows the room id and rejects only a duplicate username. The desktop relay will hold source text.
