@@ -8,17 +8,20 @@ import java.util.List;
  * The server orders operations. A later operation is shifted so it still
  * means the same edit after earlier operations have been applied.
  */
-final class ServerAuthority {
+public final class ServerAuthority {
     private final String base;
     private final StringBuilder document;
     private final List<TextOp> log = new ArrayList<>();
 
-    ServerAuthority(String base) {
+    public ServerAuthority(String base) {
+        if (base == null) {
+            throw new IllegalArgumentException("base is null");
+        }
         this.base = base;
         this.document = new StringBuilder(base);
     }
 
-    TextOp receive(TextOp incoming) {
+    public TextOp receive(TextOp incoming) {
         TextOp transformed = incoming;
         for (int revision = incoming.baseRevision(); revision < log.size(); revision++) {
             transformed = transform(transformed, log.get(revision));
@@ -28,15 +31,15 @@ final class ServerAuthority {
         return transformed;
     }
 
-    String document() {
+    public String document() {
         return document.toString();
     }
 
-    List<TextOp> log() {
+    public List<TextOp> log() {
         return List.copyOf(log);
     }
 
-    static String replay(String base, List<TextOp> log) {
+    public static String replay(String base, List<TextOp> log) {
         StringBuilder text = new StringBuilder(base);
         for (TextOp op : log) {
             apply(text, op);
@@ -44,7 +47,7 @@ final class ServerAuthority {
         return text.toString();
     }
 
-    String base() {
+    public String base() {
         return base;
     }
 
