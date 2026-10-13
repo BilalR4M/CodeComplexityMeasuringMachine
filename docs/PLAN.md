@@ -125,7 +125,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       pr:         #34
 
 #### P1-T04 Halstead metrics
-- [ ] P1-T04 Halstead metrics
+- [x] P1-T04 Halstead metrics
       why:        The legacy app has two different Halstead scans. Maintainability index must use this one.
       scope:      `ccmm-core`
       depends on: P1-T01

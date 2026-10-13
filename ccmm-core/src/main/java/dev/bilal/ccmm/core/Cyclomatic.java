@@ -23,8 +23,6 @@ import java.util.Comparator;
 import java.util.List;
 
 final class Cyclomatic {
-    private static final Halstead UNMEASURED = new Halstead(0, 0, 0, 0, 0, 0, 0, 0, 0);
-
     private Cyclomatic() {}
 
     static List<MethodMetrics> methods(CompilationUnit unit) {
@@ -41,7 +39,8 @@ final class Cyclomatic {
 
     private static MethodMetrics metrics(CallableDeclaration<?> declaration) {
         int line = declaration.getBegin().map(position -> position.line).orElse(1);
-        return new MethodMetrics(declaration.getNameAsString(), line, score(declaration), 0, UNMEASURED, 0);
+        return new MethodMetrics(
+                declaration.getNameAsString(), line, score(declaration), 0, HalsteadMetrics.measure(declaration), 0);
     }
 
     private static int score(CallableDeclaration<?> declaration) {
