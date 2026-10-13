@@ -167,7 +167,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       pr:         #36
 
 #### P1-T07 Golden fixtures
-- [ ] P1-T07 Golden fixtures
+- [x] P1-T07 Golden fixtures
       why:        Metric changes have to be deliberate, and the legacy sample is the shared input.
       scope:      `ccmm-core` and `fixtures/golden/`
       depends on: P1-T02, P1-T03, P1-T04, P1-T05, P1-T06
