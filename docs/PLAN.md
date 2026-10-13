@@ -259,7 +259,7 @@ Goal: the shaded CLI jar analyzes, gates, and reports with `ccmm-core`. Exit cri
 Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the three IDE benchmarks exist and `mvn -B -ntp -pl ccmm-app -am test` passes. If P0-T01 is `no-go`, P3-T02 stops for a decision instead of shipping RichTextFX.
 
 #### P3-T01 Window and file tree
-- [ ] P3-T01 Window and file tree
+- [x] P3-T01 Window and file tree
       why:        Metrics are useless until a project is visible.
       scope:      `ccmm-app` and `docs/benchmarks/cold-start.md`
       depends on: P0-T01
@@ -270,6 +270,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
       verify:     `mvn -B -ntp -pl ccmm-app -am test`
       size:       L
       issue:      #18
+      pr:         #44
 
 #### P3-T02 Editor
 - [ ] P3-T02 Editor

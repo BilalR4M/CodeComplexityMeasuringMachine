@@ -1,16 +1,23 @@
 package dev.bilal.ccmm.app;
 
+import java.nio.file.Path;
+import java.util.List;
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public final class Main extends Application {
+    private IdeWindow window;
+
     @Override
     public void start(Stage stage) {
+        window = new IdeWindow();
         stage.setTitle("CCMM IDE");
-        stage.setScene(new Scene(new StackPane(new Label("CCMM IDE")), 1100, 700));
+        stage.setScene(window.scene());
+        stage.setOnCloseRequest(event -> window.close());
         stage.show();
+        List<String> args = getParameters().getRaw();
+        if (args.size() == 1) {
+            window.open(Path.of(args.get(0)));
+        }
     }
 }
