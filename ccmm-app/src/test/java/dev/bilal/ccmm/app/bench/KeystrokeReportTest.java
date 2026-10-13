@@ -35,4 +35,15 @@ class KeystrokeReportTest {
         assertTrue(report.contains("P3-T02 is replaced with an editor change"));
         assertTrue(report.strip().endsWith("no-go"));
     }
+
+    @Test
+    void anEditorMeasurementIsAppendedAfterTheSpike() {
+        String spike = KeystrokeReport.format("Windows amd64", "mvn test", 1.25, 200L * 1024 * 1024);
+        String combined = KeystrokeReport.withEditorMeasurement(spike, "Windows amd64", "mvn test", 2.5, 300L * 1024 * 1024);
+
+        assertTrue(combined.contains("p95: 1.250 ms"));
+        assertTrue(combined.contains("## Editor"));
+        assertTrue(combined.contains("p95: 2.500 ms"));
+        assertTrue(combined.strip().endsWith("go"));
+    }
 }

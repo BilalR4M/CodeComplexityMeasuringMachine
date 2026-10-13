@@ -9,7 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import javafx.application.Platform;
 
-public record FileNode(String name, boolean directory, List<FileNode> children) {
+public record FileNode(String name, Path path, boolean directory, List<FileNode> children) {
     public FileNode {
         children = List.copyOf(children);
     }
@@ -30,12 +30,14 @@ public record FileNode(String name, boolean directory, List<FileNode> children) 
             List<Path> entries = listed.sorted(Comparator.comparing(path -> path.getFileName().toString())).toList();
             for (Path entry : entries) {
                 boolean childDirectory = Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS);
-                children.add(childDirectory ? read(entry) : new FileNode(entry.getFileName().toString(), false, List.of()));
+                children.add(childDirectory
+                        ? read(entry)
+                        : new FileNode(entry.getFileName().toString(), entry, false, List.of()));
             }
         } catch (IOException exception) {
-            return new FileNode(directory.getFileName().toString(), true, List.of());
+            return new FileNode(directory.getFileName().toString(), directory, true, List.of());
         }
-        return new FileNode(directory.getFileName().toString(), true, children);
+        return new FileNode(directory.getFileName().toString(), directory, true, children);
     }
 
     private static boolean onJavaFxThread() {

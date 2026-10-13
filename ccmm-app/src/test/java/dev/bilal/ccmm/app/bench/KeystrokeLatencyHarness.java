@@ -1,5 +1,6 @@
 package dev.bilal.ccmm.app.bench;
 
+import dev.bilal.ccmm.app.IdeWindow;
 import java.awt.GraphicsEnvironment;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
@@ -8,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
-import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
 import org.junit.jupiter.api.Assumptions;
@@ -49,8 +48,9 @@ class KeystrokeLatencyHarness {
 
         double p95 = KeystrokeReport.percentileMillis(samples.get(), 0.95);
         String os = System.getProperty("os.name") + " " + System.getProperty("os.arch");
-        String report = KeystrokeReport.format(os, COMMAND, p95, memory.get());
-        Files.writeString(KeystrokeReport.reportFile(java.nio.file.Path.of("").toAbsolutePath()), report);
+        java.nio.file.Path report = KeystrokeReport.reportFile(java.nio.file.Path.of("").toAbsolutePath());
+        String existing = Files.readString(report);
+        Files.writeString(report, KeystrokeReport.withEditorMeasurement(existing, os, COMMAND, p95, memory.get()));
     }
 
     private static void assertTrueAwait(CountDownLatch done) throws InterruptedException {
@@ -65,11 +65,14 @@ class KeystrokeLatencyHarness {
             AtomicReference<Long> memory,
             AtomicReference<Throwable> failure) {
         try {
-            CodeArea area = new CodeArea(KeystrokeReport.sample(KeystrokeReport.LINES));
+            Platform.setImplicitExit(false);
+            IdeWindow window = new IdeWindow();
             Stage stage = new Stage();
-            stage.setTitle("CCMM keystroke spike");
-            stage.setScene(new Scene(new StackPane(area), 1100, 700));
+            stage.setTitle("CCMM IDE");
+            stage.setScene(window.scene());
             stage.show();
+            CodeArea area = window.editor();
+            area.replaceText(KeystrokeReport.sample(KeystrokeReport.LINES));
 
             long[] measured = new long[KeystrokeReport.SAMPLES];
             int[] seen = {-30};
@@ -100,12 +103,14 @@ class KeystrokeLatencyHarness {
                             stop();
                             samples.set(measured);
                             stage.close();
+                            window.close();
                             done.countDown();
                         }
                     } catch (Throwable error) {
                         failure.set(error);
                         stop();
                         stage.close();
+                        window.close();
                         done.countDown();
                     }
                 }

@@ -273,7 +273,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
       pr:         #44
 
 #### P3-T02 Editor
-- [ ] P3-T02 Editor
+- [x] P3-T02 Editor
       why:        The editing surface has to meet the keystroke budget before metrics are attached.
       scope:      `ccmm-app` and `docs/benchmarks/keystroke-latency.md`
       depends on: P3-T01

@@ -58,6 +58,31 @@ final class KeystrokeReport {
         return report.toString();
     }
 
+    static String withEditorMeasurement(String existing, String os, String command, double p95Ms, long memoryBytes) {
+        String section = editorSection(os, command, p95Ms, memoryBytes);
+        int heading = existing.indexOf("\n## Editor\n");
+        String base = heading < 0 ? existing.strip() : existing.substring(0, heading).strip();
+        return base + "\n\n" + section;
+    }
+
+    private static String editorSection(String os, String command, double p95Ms, long memoryBytes) {
+        String verdict = p95Ms < BUDGET_MS ? "go" : "no-go";
+        String memoryMb = String.format(Locale.US, "%.1f", memoryBytes / (1024.0 * 1024.0));
+        String p95 = String.format(Locale.US, "%.3f", p95Ms);
+        StringBuilder report = new StringBuilder();
+        report.append("## Editor\n\n");
+        report.append("Fresh p95 for the editor `CodeArea`, after a ").append(LINES);
+        report.append("-line buffer was on screen.\n\n");
+        report.append("- OS: ").append(os).append('\n');
+        report.append("- Command: `").append(command).append("`\n");
+        report.append("- Buffer: ").append(LINES).append(" lines\n");
+        report.append("- Samples: ").append(SAMPLES).append(" single-character inserts\n");
+        report.append("- p95: ").append(p95).append(" ms\n");
+        report.append("- memory: ").append(memoryMb).append(" MB committed\n");
+        report.append('\n').append(verdict).append('\n');
+        return report.toString();
+    }
+
     static Path reportFile(Path cwd) {
         if (Files.exists(cwd.resolve("docs/benchmarks"))) {
             return cwd.resolve("docs/benchmarks/keystroke-latency.md");
