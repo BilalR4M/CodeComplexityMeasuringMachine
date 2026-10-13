@@ -4,42 +4,70 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
+import org.fxmisc.richtext.CodeArea;
 
 public final class IdeWindow {
     private final FileTreeController files = new FileTreeController();
-    private final TreeView<String> tree = new TreeView<>();
+    private final TreeView<FileNode> tree = new TreeView<>();
+    private final CodeArea editor = new CodeArea();
     private final BorderPane root = new BorderPane();
     private final Scene scene = new Scene(root, 1100, 700);
     private Runnable onListed = () -> {};
+    private Runnable onOpened = () -> {};
+    private int openGeneration;
 
     public IdeWindow() {
         tree.setShowRoot(true);
+        tree.setCellFactory(view -> new TreeCell<>() {
+            @Override
+            protected void updateItem(FileNode item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.name());
+            }
+        });
+        tree.getSelectionModel().selectedItemProperty().addListener((obs, previous, item) -> {
+            if (item != null && item.getValue() != null && !item.getValue().directory()) {
+                openFile(item.getValue().path());
+            }
+        });
         MenuItem open = new MenuItem("Open Directory...");
         open.setOnAction(event -> chooseDirectory());
         Menu file = new Menu("File", null, open);
         root.setTop(new MenuBar(file));
         root.setLeft(tree);
-        root.setCenter(new Label("No file open"));
+        root.setCenter(editor);
     }
 
     public Scene scene() {
         return scene;
     }
 
-    TreeItem<String> listedRoot() {
+    TreeItem<FileNode> listedRoot() {
         return tree.getRoot();
+    }
+
+    void select(TreeItem<FileNode> item) {
+        tree.getSelectionModel().select(item);
+    }
+
+    public CodeArea editor() {
+        return editor;
     }
 
     public void setOnListed(Runnable onListed) {
         this.onListed = onListed;
+    }
+
+    public void setOnOpened(Runnable onOpened) {
+        this.onOpened = onOpened;
     }
 
     public void open(Path directory) {
@@ -57,6 +85,20 @@ public final class IdeWindow {
         files.close();
     }
 
+    private void openFile(Path file) {
+        if (file == null || !file.getFileName().toString().endsWith(".java")) {
+            return;
+        }
+        int ticket = ++openGeneration;
+        files.read(file, text -> Platform.runLater(() -> {
+            if (ticket != openGeneration || text == null) {
+                return;
+            }
+            editor.replaceText(text);
+            onOpened.run();
+        }));
+    }
+
     private void chooseDirectory() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Open project");
@@ -66,8 +108,8 @@ public final class IdeWindow {
         }
     }
 
-    private static TreeItem<String> item(FileNode node) {
-        TreeItem<String> item = new TreeItem<>(node.name());
+    private static TreeItem<FileNode> item(FileNode node) {
+        TreeItem<FileNode> item = new TreeItem<>(node);
         for (FileNode child : node.children()) {
             item.getChildren().add(item(child));
         }
