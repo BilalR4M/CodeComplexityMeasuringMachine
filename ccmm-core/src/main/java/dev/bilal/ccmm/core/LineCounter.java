@@ -24,26 +24,50 @@ final class LineCounter {
     private LineCounter() {}
 
     static Counts count(String source, CompilationUnit unit) {
-        int physical = physicalLines(source);
-        if (physical == 0) {
-            return new Counts(0, 0, 0, 0);
-        }
-        boolean[] code = new boolean[physical + 1];
-        boolean[] comment = new boolean[physical + 1];
-        unit.getTokenRange().ifPresent(range -> mark(range, physical, code, comment));
+        Classified lines = classify(source, unit);
+        int physical = Math.max(0, lines.code.length - 1);
         int codeLines = 0;
         int commentLines = 0;
         int blankLines = 0;
         for (int line = 1; line <= physical; line++) {
-            if (code[line]) {
+            if (lines.code[line]) {
                 codeLines++;
-            } else if (comment[line]) {
+            } else if (lines.comment[line]) {
                 commentLines++;
             } else {
                 blankLines++;
             }
         }
         return new Counts(physical, codeLines, commentLines, blankLines);
+    }
+
+    /** Index 0 is unused. A true entry is a code line. */
+    static boolean[] codeLines(String source, CompilationUnit unit) {
+        return classify(source, unit).code;
+    }
+
+    static int codeLinesIn(boolean[] code, int beginLine, int endLine) {
+        int from = Math.max(1, beginLine);
+        int to = Math.min(code.length - 1, endLine);
+        int count = 0;
+        for (int line = from; line <= to; line++) {
+            if (code[line]) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private record Classified(boolean[] code, boolean[] comment) {}
+
+    private static Classified classify(String source, CompilationUnit unit) {
+        int physical = physicalLines(source);
+        boolean[] code = new boolean[physical + 1];
+        boolean[] comment = new boolean[physical + 1];
+        if (physical > 0) {
+            unit.getTokenRange().ifPresent(range -> mark(range, physical, code, comment));
+        }
+        return new Classified(code, comment);
     }
 
     private static void mark(TokenRange range, int physical, boolean[] code, boolean[] comment) {

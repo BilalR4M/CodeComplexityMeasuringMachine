@@ -25,27 +25,31 @@ import java.util.List;
 final class Cyclomatic {
     private Cyclomatic() {}
 
-    static List<MethodMetrics> methods(CompilationUnit unit) {
+    static List<MethodMetrics> methods(CompilationUnit unit, boolean[] codeLines) {
         List<MethodMetrics> methods = new ArrayList<>();
         for (MethodDeclaration method : unit.findAll(MethodDeclaration.class)) {
-            methods.add(metrics(method));
+            methods.add(metrics(method, codeLines));
         }
         for (ConstructorDeclaration constructor : unit.findAll(ConstructorDeclaration.class)) {
-            methods.add(metrics(constructor));
+            methods.add(metrics(constructor, codeLines));
         }
         methods.sort(Comparator.comparingInt(MethodMetrics::startLine).thenComparing(MethodMetrics::name));
         return List.copyOf(methods);
     }
 
-    private static MethodMetrics metrics(CallableDeclaration<?> declaration) {
+    private static MethodMetrics metrics(CallableDeclaration<?> declaration, boolean[] codeLines) {
         int line = declaration.getBegin().map(position -> position.line).orElse(1);
+        int end = declaration.getEnd().map(position -> position.line).orElse(line);
+        Halstead halstead = HalsteadMetrics.measure(declaration);
+        int cyclomatic = score(declaration);
+        double maintainability = Maintainability.index(halstead.volume(), cyclomatic, LineCounter.codeLinesIn(codeLines, line, end));
         return new MethodMetrics(
                 declaration.getNameAsString(),
                 line,
-                score(declaration),
+                cyclomatic,
                 LoopNesting.depth(declaration),
-                HalsteadMetrics.measure(declaration),
-                0);
+                halstead,
+                maintainability);
     }
 
     private static int score(CallableDeclaration<?> declaration) {
