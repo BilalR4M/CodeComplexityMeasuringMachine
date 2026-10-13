@@ -388,4 +388,4 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
 | Version | Change | Reason | PR |
 |---|---|---|---|
 | 1 | Initial proposed plan | Planning protocol, issue #1 | #27 |
-| 2 | Accept ADR-0002, ADR-0004, ADR-0005, ADR-0006, and ADR-0007 | Owner decision, issue #3 | |
+| 2 | Accept ADR-0002, ADR-0004, ADR-0005, ADR-0006, and ADR-0007 | Owner decision, issue #3 | #48 |
