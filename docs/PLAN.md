@@ -136,6 +136,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       verify:     `mvn -B -ntp -pl ccmm-core test`
       size:       M
       issue:      #9
+      pr:         #35
 
 #### P1-T05 Maintainability index
 - [ ] P1-T05 Maintainability index
