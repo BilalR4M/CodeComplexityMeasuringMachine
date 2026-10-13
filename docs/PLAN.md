@@ -321,7 +321,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
 Goal: co-edit one file, with chat and presence on the project room. ADR-0002, ADR-0005, and ADR-0006 are accepted. Exit criteria: two IDE processes converge on concurrent inserts, a wrong invite token is rejected, and the file tree is not sent over the socket.
 
 #### P4-T01 Protocol model
-- [ ] P4-T01 Protocol model
+- [x] P4-T01 Protocol model
       why:        The IDE and the relay have to share one message definition.
       scope:      `ccmm-collab-protocol`
       depends on: P0-T02, #3
@@ -332,6 +332,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       verify:     `mvn -B -ntp -pl ccmm-collab-protocol test`
       size:       L
       issue:      #22
+      pr:         #49
 
 #### P4-T02 Path checks
 - [ ] P4-T02 Path checks

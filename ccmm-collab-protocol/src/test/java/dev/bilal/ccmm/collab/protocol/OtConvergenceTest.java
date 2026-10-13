@@ -86,6 +86,43 @@ class OtConvergenceTest {
         }
     }
 
+    @Test
+    void anEditBasedOnALaterRevisionReplaysToTheServerDocument() {
+        String base = "hello";
+        ServerAuthority server = new ServerAuthority(base);
+        server.receive(TextOp.insert(0, "X", 0, "a"));
+        server.receive(TextOp.insert(6, "Y", 1, "b"));
+
+        assertEquals("XhelloY", server.document());
+        assertEquals(server.document(), ServerAuthority.replay(base, server.log()));
+        assertEquals(1, server.log().get(1).baseRevision());
+    }
+
+    @Test
+    void threeConcurrentInsertsFollowServerOrder() {
+        String base = "ab";
+        ServerAuthority server = new ServerAuthority(base);
+        server.receive(TextOp.insert(1, "X", 0, "a"));
+        server.receive(TextOp.insert(1, "Y", 0, "b"));
+        server.receive(TextOp.insert(1, "Z", 0, "c"));
+
+        assertEquals("aXYZb", server.document());
+        assertEquals(server.document(), ServerAuthority.replay(base, server.log()));
+    }
+
+    @Test
+    void fileRoomMessagesConvergeThroughTheirTextOps() {
+        String base = "hello";
+        Message.Insert left = new Message.Insert("A.java", 0, "X", 0, "a");
+        Message.Delete right = new Message.Delete("A.java", 1, 2, 0, "b");
+        ServerAuthority server = new ServerAuthority(base);
+        server.receive(left.op());
+        server.receive(right.op());
+
+        assertEquals("Xhlo", server.document());
+        assertEquals(server.document(), ServerAuthority.replay(base, server.log()));
+    }
+
     private static void assertConverge(String base, TextOp first, TextOp second, String expected) {
         ServerAuthority server = new ServerAuthority(base);
         server.receive(first);
