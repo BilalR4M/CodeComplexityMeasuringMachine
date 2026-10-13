@@ -1,5 +1,5 @@
 # PLAN
-Status: PROPOSED
+Status: APPROVED
 Version: 1
 
 The owner sets `Status: APPROVED` and adds the `plan-approved` label. No implementation starts before that. Phase 4 is `BLOCKED: ADR-0002`.
@@ -49,7 +49,7 @@ ADR-0004 is the default the Phase 1 tasks implement. Accepting or replacing it i
 Goal: prove the two decisions that can invalidate this plan. Exit criteria: `docs/benchmarks/keystroke-latency.md` and `docs/benchmarks/ot-convergence.md` each end with `go` or `no-go`, and a no-go names the plan change.
 
 #### P0-T01 RichTextFX keystroke spike
-- [ ] P0-T01 RichTextFX keystroke spike
+- [x] P0-T01 RichTextFX keystroke spike
       why:        ADR-0001 requires proof before the editor is built.
       scope:      `ccmm-app` harness and `docs/benchmarks/keystroke-latency.md`
       depends on: none
