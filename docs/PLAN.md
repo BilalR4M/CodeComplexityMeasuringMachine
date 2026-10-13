@@ -163,6 +163,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       verify:     `mvn -B -ntp -pl ccmm-core test`
       size:       S
       issue:      #11
+      pr:         #36
 
 #### P1-T07 Golden fixtures
 - [ ] P1-T07 Golden fixtures
