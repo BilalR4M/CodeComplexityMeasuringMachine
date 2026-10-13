@@ -122,6 +122,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       verify:     `mvn -B -ntp -pl ccmm-core test`
       size:       M
       issue:      #8
+      pr:         #34
 
 #### P1-T04 Halstead metrics
 - [ ] P1-T04 Halstead metrics
