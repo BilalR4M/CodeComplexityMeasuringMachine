@@ -210,6 +210,7 @@ Goal: the shaded CLI jar analyzes, gates, and reports with `ccmm-core`. Exit cri
       verify:     `mvn -B -ntp -pl ccmm-cli -am verify`
       size:       M
       issue:      #14
+      pr:         #40
 
 #### P2-T02 Gate rule file
 - [ ] P2-T02 Gate rule file
