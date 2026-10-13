@@ -213,7 +213,7 @@ Goal: the shaded CLI jar analyzes, gates, and reports with `ccmm-core`. Exit cri
       pr:         #40
 
 #### P2-T02 Gate rule file
-- [ ] P2-T02 Gate rule file
+- [x] P2-T02 Gate rule file
       why:        The pull-request gate needs thresholds that are not hard-coded.
       scope:      `ccmm-cli`
       depends on: P1-T05
@@ -224,6 +224,7 @@ Goal: the shaded CLI jar analyzes, gates, and reports with `ccmm-core`. Exit cri
       verify:     `mvn -B -ntp -pl ccmm-cli -am test`
       size:       M
       issue:      #15
+      pr:         #41
 
 #### P2-T03 Gate command
 - [ ] P2-T03 Gate command
