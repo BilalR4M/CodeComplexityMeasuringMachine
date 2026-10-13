@@ -1,0 +1,19 @@
+# Dry-run of the installer pipeline (no release, no signing required).
+name: package-check
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/**"
+      - "ccmm-app/**"
+      - "pom.xml"
+      - ".github/workflows/package.yml"
+      - ".github/workflows/package-check.yml"
+permissions:
+  contents: read
+jobs:
+  dry-run:
+    uses: ./.github/workflows/package.yml
+    with:
+      version: "1.0.0"
+    secrets: inherit

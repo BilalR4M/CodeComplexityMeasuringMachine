@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Enforces Conventional Commits. Enable with: git config core.hooksPath .githooks
+first="$(head -n1 "$1")"
+case "$first" in Merge\ *|Revert\ *|fixup!*|squash!*) exit 0;; esac
+re='^(feat|fix|perf|refactor|test|docs|build|ci|chore|revert)(\((core|cli|app|collab|protocol|server|ci|build|docs|release|deps)\))?!?: .{1,72}$'
+if ! [[ "$first" =~ $re ]]; then
+  echo "commit-msg: expected '<type>(<scope>): <subject>' (see docs/agents/COMMITS.md)" >&2
+  echo "  types: feat fix perf refactor test docs build ci chore revert" >&2
+  echo "  scopes: core cli app collab protocol server ci build docs release deps" >&2
+  exit 1
+fi

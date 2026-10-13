@@ -1,80 +1,28 @@
-# Code Complexity Measuring Machine
+# CCMM IDE
 
-## Overview
+Desktop IDE written in Java with live code-complexity metrics (cyclomatic complexity, Halstead, maintainability index, LOC), quality gates for CI and PRs, and real-time collaboration. Windows, Linux, macOS.
 
-The Code Complexity Measuring Machine (CCMM) is a comprehensive tool designed to analyze and measure the complexity of codebases. It provides various metrics such as Halstead metrics, Maintainability Index, and Line Counts to help developers understand and optimize their code.
+The previous web version lives at tag `legacy-web-v1`.
 
-## Features
+## Install
+Download the installer for your OS from [Releases](https://github.com/BilalR4M/CodeComplexityMeasuringMachine/releases). Verify with `SHA256SUMS-*.txt`.
 
-- **Halstead Metrics Calculation**: Measures vocabulary, length, volume, difficulty, and effort of the code.
-- **Maintainability Index Calculation**: Computes the maintainability index based on cyclomatic complexity, lines of code, and Halstead volume.
-- **Line Count Analysis**: Counts the number of code lines, comment lines, blank lines, and unique methods.
-- **Real-time Collaboration**: Supports real-time collaboration with features like file editing, saving, and downloading.
-- **Integrated Group Chat**: Allows team members to communicate seamlessly within the platform.
+## Use as a library
+Maven (GitHub Packages):
+```xml
+<repository><id>github</id><url>https://maven.pkg.github.com/BilalR4M/CodeComplexityMeasuringMachine</url></repository>
+<dependency><groupId>dev.bilal.ccmm</groupId><artifactId>ccmm-core</artifactId><version>VERSION</version></dependency>
+```
+GitHub Packages requires a token with `read:packages` in `~/.m2/settings.xml`.
 
+## Collaboration server
+```
+docker run -p 8080:8080 ghcr.io/bilalr4m/ccmm-collab-server:latest
+```
 
-## Installation
-
-### Client
-
-1. Navigate to the `client` directory:
-
-   ```sh
-   cd CCMM/client
-   ```
-
-2. Install the dependencies:
-
-   ```sh
-   npm install
-   ```
-
-3. Start the development server:
-   ```sh
-   npm run dev
-   ```
-
-### Server
-
-1. Navigate to the server directory:
-
-   ```sh
-   cd CCMM/server
-   ```
-
-2. Install the dependencies:
-
-   ```sh
-   npm install
-   ```
-
-3. Start the server:
-   ```sh
-   npm run dev
-   ```
-
-### Metrics API
-
-1. Navigate to the CCMM-Metrics-API directory:
-
-   ```sh
-   cd CCMM-Metrics-API
-   ```
-
-2. Build the project using Maven:
-
-   ```sh
-   ./mvnw clean install
-   ```
-
-3. Run the Spring Boot application:
-   ```sh
-   ./mvnw spring-boot:run
-   ```
-
-## Usage
-
-1. Open the client application in your browser.
-2. Upload or create new files to analyze.
-3. Use the provided tools to calculate Halstead metrics, Maintainability Index, and Line Counts.
-4. Collaborate with team members in real-time and use the integrated chat for communication.
+## Develop
+See [AGENTS.md](AGENTS.md) and [docs/PLAN.md](docs/PLAN.md).
+```
+mvn -B -ntp verify
+mvn -pl ccmm-app -am javafx:run
+```

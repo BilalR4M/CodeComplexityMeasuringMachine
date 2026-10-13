@@ -1,0 +1,10 @@
+target/
+dist/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.log
+hs_err_pid*
+.flattened-pom.xml
+gate.md

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "58f1da83d4ce40227a55828fe507c9c370792d34",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "ccmm-ide",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": ["pom.xml"]
+    }
+  }
+}
