@@ -192,6 +192,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       verify:     `mvn -B -ntp -pl ccmm-core test`
       size:       M
       issue:      #13
+      pr:         #39
 
 ### Phase 2 — CLI
 
