@@ -303,7 +303,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
       pr:         #46
 
 #### P3-T04 Metrics panel
-- [ ] P3-T04 Metrics panel
+- [x] P3-T04 Metrics panel
       why:        The legacy sidebar's job was to show MI, complexity, LOC, and loop depth without failing the editor.
       scope:      `ccmm-app`
       depends on: P3-T03
