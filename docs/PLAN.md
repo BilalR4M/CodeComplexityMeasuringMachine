@@ -270,6 +270,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
       verify:     `mvn -B -ntp -pl ccmm-app -am test`
       size:       L
       issue:      #18
+      pr:         #44
 
 #### P3-T02 Editor
 - [ ] P3-T02 Editor
