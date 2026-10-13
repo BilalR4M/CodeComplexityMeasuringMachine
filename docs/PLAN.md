@@ -64,7 +64,7 @@ Goal: prove the two decisions that can invalidate this plan. Exit criteria: `doc
       pr:         #28
 
 #### P0-T02 OT convergence spike
-- [ ] P0-T02 OT convergence spike
+- [x] P0-T02 OT convergence spike
       why:        Phase 4 stays blocked until concurrent edits converge or ADR-0002 is replaced.
       scope:      `ccmm-collab-protocol/src/test` and `docs/benchmarks/ot-convergence.md`
       depends on: none
