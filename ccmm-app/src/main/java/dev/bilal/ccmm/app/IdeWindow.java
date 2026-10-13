@@ -1,5 +1,6 @@
 package dev.bilal.ccmm.app;
 
+import dev.bilal.ccmm.core.AnalysisResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javafx.application.Platform;
@@ -16,15 +17,25 @@ import org.fxmisc.richtext.CodeArea;
 
 public final class IdeWindow {
     private final FileTreeController files = new FileTreeController();
+    private final AnalysisScheduler analysis;
     private final TreeView<FileNode> tree = new TreeView<>();
     private final CodeArea editor = new CodeArea();
     private final BorderPane root = new BorderPane();
     private final Scene scene = new Scene(root, 1100, 700);
     private Runnable onListed = () -> {};
     private Runnable onOpened = () -> {};
+    private Runnable onAnalyzed = () -> {};
+    private Path projectRoot;
+    private String currentRelative;
+    private AnalysisResult latest;
     private int openGeneration;
 
     public IdeWindow() {
+        this(AnalysisScheduler.QUIET_MILLIS);
+    }
+
+    IdeWindow(long analysisDelayMs) {
+        analysis = new AnalysisScheduler(analysisDelayMs, Platform::runLater);
         tree.setShowRoot(true);
         tree.setCellFactory(view -> new TreeCell<>() {
             @Override
@@ -44,17 +55,18 @@ public final class IdeWindow {
         root.setTop(new MenuBar(file));
         root.setLeft(tree);
         root.setCenter(editor);
+        editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
     }
 
     public Scene scene() {
         return scene;
     }
 
-    TreeItem<FileNode> listedRoot() {
+    public TreeItem<FileNode> listedRoot() {
         return tree.getRoot();
     }
 
-    void select(TreeItem<FileNode> item) {
+    public void select(TreeItem<FileNode> item) {
         tree.getSelectionModel().select(item);
     }
 
@@ -70,10 +82,19 @@ public final class IdeWindow {
         this.onOpened = onOpened;
     }
 
+    public void setOnAnalyzed(Runnable onAnalyzed) {
+        this.onAnalyzed = onAnalyzed;
+    }
+
+    AnalysisResult latestAnalysis() {
+        return latest;
+    }
+
     public void open(Path directory) {
         if (directory == null || !Files.isDirectory(directory)) {
             return;
         }
+        projectRoot = directory;
         files.open(directory, node -> Platform.runLater(() -> {
             tree.setRoot(item(node));
             tree.getRoot().setExpanded(true);
@@ -83,6 +104,7 @@ public final class IdeWindow {
 
     public void close() {
         files.close();
+        analysis.close();
     }
 
     private void openFile(Path file) {
@@ -94,9 +116,28 @@ public final class IdeWindow {
             if (ticket != openGeneration || text == null) {
                 return;
             }
+            currentRelative = relative(file);
             editor.replaceText(text);
             onOpened.run();
         }));
+    }
+
+    private void scheduleAnalysis(String text) {
+        if (currentRelative == null || text == null) {
+            return;
+        }
+        analysis.schedule(text, currentRelative, this::publish);
+    }
+
+    private void publish(AnalysisResult result) {
+        latest = result;
+        onAnalyzed.run();
+    }
+
+    private String relative(Path file) {
+        Path root = projectRoot.toAbsolutePath().normalize();
+        Path target = file.toAbsolutePath().normalize();
+        return root.relativize(target).toString().replace('\\', '/');
     }
 
     private void chooseDirectory() {
