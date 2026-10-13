@@ -48,6 +48,59 @@ class AnalyzerTest {
     }
 
     @Test
+    void commentOnlyAndBlankLinesAreNotCode() {
+        String source = "class A {\n    // note\n\n    int x;\n}\n";
+
+        FileMetrics file = ok(source);
+
+        assertEquals(5, file.physicalLines());
+        assertEquals(3, file.codeLines());
+        assertEquals(1, file.commentLines());
+        assertEquals(1, file.blankLines());
+    }
+
+    @Test
+    void blockCommentLinesCountAsComments() {
+        String source = "class A {\n    /*\n     * span\n     */\n    int x;\n}\n";
+
+        FileMetrics file = ok(source);
+
+        assertEquals(6, file.physicalLines());
+        assertEquals(3, file.codeLines());
+        assertEquals(3, file.commentLines());
+        assertEquals(0, file.blankLines());
+    }
+
+    @Test
+    void commentMarkersInsideStringsStayCode() {
+        String source = "class A {\n    String s = \"// not a comment\";\n}\n";
+
+        FileMetrics file = ok(source);
+
+        assertEquals(3, file.codeLines());
+        assertEquals(0, file.commentLines());
+    }
+
+    @Test
+    void codeLineWithTrailingCommentStaysCode() {
+        String source = "class A {\n    int x; // note\n}\n";
+
+        FileMetrics file = ok(source);
+
+        assertEquals(3, file.physicalLines());
+        assertEquals(3, file.codeLines());
+        assertEquals(0, file.commentLines());
+        assertEquals(0, file.blankLines());
+    }
+
+    private FileMetrics ok(String source) {
+        AnalysisResult.Ok result = assertInstanceOf(AnalysisResult.Ok.class, analyzer.analyze(source, "A.java"));
+        FileMetrics file = result.file();
+        assertEquals(file.physicalLines(), file.codeLines() + file.commentLines() + file.blankLines());
+        return file;
+    }
+
+    @Test
     void nullSourceIsFailed() {
         AnalysisResult result = analyzer.analyze(null, "src/Missing.java");
 

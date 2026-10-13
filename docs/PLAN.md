@@ -97,7 +97,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       pr:         #30
 
 #### P1-T02 Line counts
-- [ ] P1-T02 Line counts
+- [x] P1-T02 Line counts
       why:        LOC feeds maintainability index and the panel, and the legacy endpoint disagrees with the MI scan.
       scope:      `ccmm-core`
       depends on: P1-T01
@@ -108,6 +108,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       verify:     `mvn -B -ntp -pl ccmm-core test`
       size:       S
       issue:      #7
+      pr:         #32
 
 #### P1-T03 Cyclomatic complexity
 - [ ] P1-T03 Cyclomatic complexity
