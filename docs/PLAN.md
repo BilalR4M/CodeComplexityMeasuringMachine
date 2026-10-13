@@ -242,7 +242,7 @@ Goal: the shaded CLI jar analyzes, gates, and reports with `ccmm-core`. Exit cri
       pr:         #42
 
 #### P2-T04 Report command
-- [ ] P2-T04 Report command
+- [x] P2-T04 Report command
       why:        A saved report is the offline view of the same numbers the IDE shows.
       scope:      `ccmm-cli`
       depends on: P2-T01
