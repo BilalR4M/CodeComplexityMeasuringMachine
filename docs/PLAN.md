@@ -139,7 +139,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       pr:         #35
 
 #### P1-T05 Maintainability index
-- [ ] P1-T05 Maintainability index
+- [x] P1-T05 Maintainability index
       why:        The editor's main number must use the same volume, complexity, and LOC as the other metrics.
       scope:      `ccmm-core`
       depends on: P1-T02, P1-T03, P1-T04

@@ -25,13 +25,14 @@ public final class Analyzer {
         return new AnalysisResult.Failed(relativePath, message);
     }
 
-    /** Later metric tasks fill maintainability. */
     private static FileMetrics fileMetrics(String source, CompilationUnit unit) {
         LineCounter.Counts lines = LineCounter.count(source, unit);
-        List<MethodMetrics> methods = Cyclomatic.methods(unit);
+        boolean[] code = LineCounter.codeLines(source, unit);
+        List<MethodMetrics> methods = Cyclomatic.methods(unit, code);
         int cyclomatic = methods.stream().mapToInt(MethodMetrics::cyclomatic).sum();
         int maxLoopNesting = methods.stream().mapToInt(MethodMetrics::loopNesting).max().orElse(0);
         Halstead halstead = HalsteadMetrics.measure(unit);
+        double maintainability = Maintainability.index(halstead.volume(), cyclomatic, lines.code());
         return new FileMetrics(
                 lines.physical(),
                 lines.code(),
@@ -40,7 +41,7 @@ public final class Analyzer {
                 cyclomatic,
                 maxLoopNesting,
                 halstead,
-                0,
+                maintainability,
                 methods);
     }
 }
