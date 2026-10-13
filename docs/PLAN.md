@@ -108,6 +108,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       verify:     `mvn -B -ntp -pl ccmm-core test`
       size:       S
       issue:      #7
+      pr:         #32
 
 #### P1-T03 Cyclomatic complexity
 - [ ] P1-T03 Cyclomatic complexity
