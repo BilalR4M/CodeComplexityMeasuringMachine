@@ -61,6 +61,7 @@ Goal: prove the two decisions that can invalidate this plan. Exit criteria: `doc
       verify:     `docs/benchmarks/keystroke-latency.md` contains p95, memory, and `go` or `no-go`. `mvn -B -ntp -pl ccmm-app -am test`
       size:       M
       issue:      #4
+      pr:         #28
 
 #### P0-T02 OT convergence spike
 - [ ] P0-T02 OT convergence spike
