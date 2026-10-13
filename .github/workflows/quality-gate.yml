@@ -1,0 +1,35 @@
+# Dormant until `.ccmm.yml` exists (Phase 1) and the CLI implements `gate`.
+name: quality-gate
+on:
+  pull_request:
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - if: hashFiles('.ccmm.yml') != ''
+        uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+      - if: hashFiles('.ccmm.yml') != ''
+        run: mvn -B -ntp -q -DskipTests -pl ccmm-cli -am package
+      - id: gate
+        if: hashFiles('.ccmm.yml') != ''
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set +e
+          java -jar ccmm-cli/target/ccmm-cli-*-all.jar gate --base "origin/$BASE_REF" --format markdown > gate.md
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+      - if: hashFiles('.ccmm.yml') != ''
+        run: cat gate.md >> "$GITHUB_STEP_SUMMARY"
+      - if: hashFiles('.ccmm.yml') != '' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: ccmm-gate
+          path: gate.md
+      - if: steps.gate.outputs.code != '' && steps.gate.outputs.code != '0'
+        run: exit 1

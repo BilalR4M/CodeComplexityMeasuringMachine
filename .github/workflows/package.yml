@@ -1,0 +1,92 @@
+# Reusable: builds native installers on 4 runners. Called by release.yml and package-check.yml.
+name: package
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        default: ""
+      version:
+        type: string
+        required: true
+      release_tag:
+        type: string
+        default: ""
+jobs:
+  installers:
+    name: installers (${{ matrix.label }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, label: windows-x64 }
+          - { os: ubuntu-latest, label: linux-x64 }
+          - { os: macos-latest, label: macos-arm64 }
+          - { os: macos-15-intel, label: macos-x64 }   # verify Intel runner label is still available
+    runs-on: ${{ matrix.os }}
+    env:
+      WIN_CERT_B64: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
+      WIN_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+      MAC_CERT_B64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+      MAC_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+      MAC_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+
+      - name: WiX (Windows msi)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command candle.exe -ErrorAction SilentlyContinue)) {
+            choco install wixtoolset --no-progress -y
+            "C:\Program Files (x86)\WiX Toolset v3.14\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+          }
+      - name: rpm tooling (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm
+      - name: Import macOS signing certificate
+        if: runner.os == 'macOS' && env.MAC_CERT_B64 != ''
+        run: |
+          echo "$MAC_CERT_B64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p ci build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p ci build.keychain
+          security import "$RUNNER_TEMP/cert.p12" -k build.keychain -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
+      - name: Decode Windows signing certificate
+        if: runner.os == 'Windows' && env.WIN_CERT_B64 != ''
+        shell: bash
+        run: |
+          echo "$WIN_CERT_B64" | base64 --decode > "$RUNNER_TEMP/cert.pfx"
+          echo "WIN_CERT_FILE=$RUNNER_TEMP/cert.pfx" >> "$GITHUB_ENV"
+
+      - run: mvn -B -ntp verify
+      - name: Package
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+          LABEL: ${{ matrix.label }}
+        run: ./scripts/package.sh "$RUNNER_OS" "$VERSION" "$LABEL"
+
+      - uses: actions/attest-build-provenance@v2
+        if: inputs.release_tag != ''
+        with:
+          subject-path: dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.label }}
+          path: dist/*
+      - name: Attach to release
+        if: inputs.release_tag != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.release_tag }}
+        run: gh release upload "$TAG" dist/* --clobber
