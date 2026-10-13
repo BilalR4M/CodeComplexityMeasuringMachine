@@ -288,7 +288,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
       pr:         #45
 
 #### P3-T03 Debounced analysis
-- [ ] P3-T03 Debounced analysis
+- [x] P3-T03 Debounced analysis
       why:        Parsing on the JavaFX thread would miss the keystroke budget.
       scope:      `ccmm-app` and `docs/benchmarks/metrics-refresh.md`
       depends on: P3-T02, P1-T07
