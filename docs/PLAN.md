@@ -76,6 +76,7 @@ Goal: prove the two decisions that can invalidate this plan. Exit criteria: `doc
       verify:     `mvn -B -ntp -pl ccmm-collab-protocol test`
       size:       M
       issue:      #5
+      pr:         #29
 
 ### Phase 1 — Metrics engine
 
