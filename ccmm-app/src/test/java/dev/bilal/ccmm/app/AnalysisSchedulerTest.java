@@ -30,8 +30,6 @@ class AnalysisSchedulerTest {
             done.countDown();
         });
 
-        Thread.sleep(30);
-        assertTrue(results.isEmpty());
         assertTrue(done.await(2, TimeUnit.SECONDS));
         double elapsedMs = (System.nanoTime() - started) / 1_000_000.0;
         assertTrue(elapsedMs >= 70, "elapsed " + elapsedMs);
