@@ -285,6 +285,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
       verify:     `mvn -B -ntp -pl ccmm-app -am test`
       size:       L
       issue:      #19
+      pr:         #45
 
 #### P3-T03 Debounced analysis
 - [ ] P3-T03 Debounced analysis
