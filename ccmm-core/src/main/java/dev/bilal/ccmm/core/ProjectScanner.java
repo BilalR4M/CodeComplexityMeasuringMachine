@@ -20,13 +20,15 @@ final class ProjectScanner {
 
     private final Analyzer analyzer;
     private final Path root;
+    private final Path rootReal;
     private final List<AnalysisResult> files = new ArrayList<>();
     private final List<String> skipped = new ArrayList<>();
     private final Set<Path> seenDirectories = new HashSet<>();
 
-    private ProjectScanner(Analyzer analyzer, Path root) {
+    private ProjectScanner(Analyzer analyzer, Path root, Path rootReal) {
         this.analyzer = analyzer;
         this.root = root;
+        this.rootReal = rootReal;
     }
 
     static ProjectReport scan(Analyzer analyzer, Path projectRoot) {
@@ -37,7 +39,13 @@ final class ProjectScanner {
         if (!Files.isDirectory(root)) {
             throw new IllegalArgumentException("project root is not a directory");
         }
-        ProjectScanner scanner = new ProjectScanner(analyzer, root);
+        Path rootReal;
+        try {
+            rootReal = root.toRealPath();
+        } catch (IOException exception) {
+            throw new IllegalArgumentException("project root is not a directory", exception);
+        }
+        ProjectScanner scanner = new ProjectScanner(analyzer, root, rootReal);
         try {
             Files.walkFileTree(root, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, scanner.visitor());
         } catch (IOException exception) {
@@ -116,7 +124,7 @@ final class ProjectScanner {
     }
 
     private boolean insideRoot(Path real) {
-        Path relative = root.relativize(real.normalize());
+        Path relative = rootReal.relativize(real.normalize());
         if (relative.isAbsolute()) {
             return false;
         }

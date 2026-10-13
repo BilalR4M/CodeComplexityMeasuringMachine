@@ -94,6 +94,35 @@ class ProjectScanTest {
     }
 
     @Test
+    void aRootReachedThroughALinkStillScans() throws Exception {
+        Path project = root.resolve("proj");
+        Files.createDirectories(project);
+        Files.writeString(project.resolve("A.java"), "class A {}");
+        Path link = root.resolve("link");
+        if (!linkTo(link, project)) {
+            org.junit.jupiter.api.Assumptions.abort("cannot create a directory link");
+        }
+
+        ProjectReport report = analyzer.scan(link);
+
+        assertEquals(List.of("A.java"), report.files().stream().map(ProjectScanTest::path).toList());
+        assertEquals(List.of(), report.skipped());
+    }
+
+    private static boolean linkTo(Path link, Path target) throws Exception {
+        try {
+            Files.createSymbolicLink(link, target);
+            return true;
+        } catch (FileSystemException exception) {
+            Process process = new ProcessBuilder("cmd", "/c", "mklink", "/J", link.toString(), target.toString())
+                    .redirectErrorStream(true)
+                    .start();
+            process.waitFor();
+            return Files.exists(link);
+        }
+    }
+
+    @Test
     void aFewHundredFilesStayInsideTheBudget() throws Exception {
         int count = 300;
         for (int i = 0; i < count; i++) {
