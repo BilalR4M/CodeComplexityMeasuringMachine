@@ -314,6 +314,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
       verify:     `mvn -B -ntp -pl ccmm-app -am test`
       size:       M
       issue:      #21
+      pr:         #47
 
 ### Phase 4 — Collaboration
 
