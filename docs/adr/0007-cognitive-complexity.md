@@ -1,5 +1,5 @@
 # ADR-0007: Cognitive complexity
-Status: proposed (default pending owner decision)
+Status: accepted
 
 ## Context
 Cognitive complexity (the SonarSource metric) weights nesting and distinguishes `else-if` from a new branch. It is not one of the legacy screens. Cyclomatic complexity, Halstead, maintainability index, LOC, and loop nesting are.

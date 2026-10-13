@@ -2,7 +2,7 @@
 Status: APPROVED
 Version: 1
 
-The owner sets `Status: APPROVED` and adds the `plan-approved` label. No implementation starts before that. Phase 4 is `BLOCKED: ADR-0002`.
+The owner sets `Status: APPROVED` and adds the `plan-approved` label. No implementation starts before that.
 
 ## Goals
 
@@ -34,13 +34,13 @@ The owner sets `Status: APPROVED` and adds the `plan-approved` label. No impleme
 
 ## Open decisions
 
-- [ADR-0002](adr/0002-collaboration-algorithm.md) operational transform, proposed.
-- [ADR-0004](adr/0004-metric-formulas.md) JavaParser formulas, proposed.
-- [ADR-0005](adr/0005-relay-hosting.md) operator-run image, proposed.
-- [ADR-0006](adr/0006-room-auth.md) invite token, proposed.
-- [ADR-0007](adr/0007-cognitive-complexity.md) post-v1, proposed.
+None. The owner accepted the five proposed ADRs.
 
-ADR-0004 is the default the Phase 1 tasks implement. Accepting or replacing it is an owner edit of that file. It does not block Phase 1, because the tasks say which formula to code. ADR-0002, ADR-0005, and ADR-0006 block Phase 4.
+- [ADR-0002](adr/0002-collaboration-algorithm.md) operational transform, accepted.
+- [ADR-0004](adr/0004-metric-formulas.md) JavaParser formulas, accepted.
+- [ADR-0005](adr/0005-relay-hosting.md) operator-run image, accepted.
+- [ADR-0006](adr/0006-room-auth.md) invite token, accepted.
+- [ADR-0007](adr/0007-cognitive-complexity.md) post-v1, accepted.
 
 ## Phases
 
@@ -317,11 +317,7 @@ Goal: open a folder, edit a Java file, and see live metrics. Exit criteria: the 
 
 ### Phase 4 — Collaboration
 
-`BLOCKED: ADR-0002`
-
-Goal: co-edit one file, with chat and presence on the project room, after the owner accepts ADR-0002, ADR-0005, and ADR-0006. Exit criteria: two IDE processes converge on concurrent inserts, a wrong invite token is rejected, and the file tree is not sent over the socket.
-
-Do not pick these tasks while the #3 is open.
+Goal: co-edit one file, with chat and presence on the project room. ADR-0002, ADR-0005, and ADR-0006 are accepted. Exit criteria: two IDE processes converge on concurrent inserts, a wrong invite token is rejected, and the file tree is not sent over the socket.
 
 #### P4-T01 Protocol model
 - [ ] P4-T01 Protocol model
@@ -392,3 +388,4 @@ Do not pick these tasks while the #3 is open.
 | Version | Change | Reason | PR |
 |---|---|---|---|
 | 1 | Initial proposed plan | Planning protocol, issue #1 | #27 |
+| 2 | Accept ADR-0002, ADR-0004, ADR-0005, ADR-0006, and ADR-0007 | Owner decision, issue #3 | |

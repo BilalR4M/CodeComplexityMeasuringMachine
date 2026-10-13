@@ -1,5 +1,5 @@
 # ADR-0004: Metric formulas
-Status: proposed (default pending owner decision)
+Status: accepted
 
 ## Context
 The legacy web app computes Halstead, cyclomatic complexity, maintainability index, LOC, and loop nesting with regular expressions. Those scans disagree with each other: the Halstead endpoint and the maintainability endpoint use different operator and operand rules, LOC for maintainability is a non-empty line count rather than the line-count endpoint, cyclomatic complexity counts `else`, `return`, and `throw`, and loop depth treats the prefix `do` inside `double` as a loop. See `docs/planning/discovery.md`.

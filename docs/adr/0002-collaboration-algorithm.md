@@ -1,5 +1,5 @@
 # ADR-0002: Collaboration algorithm
-Status: proposed (default pending owner decision)
+Status: accepted
 
 ## Context
 v1 needs co-editing, chat, and presence. A central relay always exists (ADR-0005). Rooms are per file, keyed by the project-relative path. The file tree is not synced. Participants are expected to be online together; offline edit and peer-to-peer sync are out of scope.
