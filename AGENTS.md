@@ -14,7 +14,10 @@ Desktop IDE written in Java with live code-complexity metrics. Successor to the 
 
 ## Pending decisions (docs/adr) — proposed defaults, NOT accepted
 - ADR-0002 server-authoritative OT for co-editing. No collaboration implementation until accepted.
-- Relay hosting (container from ghcr.io), room auth (invite token), cognitive complexity (post-v1).
+- ADR-0004 metric formulas (JavaParser). Legacy regex results are not the oracle.
+- ADR-0005 relay hosting: operators run the ghcr.io image.
+- ADR-0006 room auth: invite token.
+- ADR-0007 cognitive complexity is post-v1.
 
 ## Read order
 | When | Read |
