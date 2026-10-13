@@ -199,7 +199,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
 Goal: the shaded CLI jar analyzes, gates, and reports with `ccmm-core`. Exit criteria: `mvn -B -ntp -pl ccmm-cli -am verify` passes. This repository still has no `.ccmm.yml`, so `.github/workflows/quality-gate.yml` stays skipped.
 
 #### P2-T01 Analyze command
-- [ ] P2-T01 Analyze command
+- [x] P2-T01 Analyze command
       why:        Local inspection and the later gate command share one entry point.
       scope:      `ccmm-cli`
       depends on: P1-T08
