@@ -25,11 +25,12 @@ public final class Analyzer {
         return new AnalysisResult.Failed(relativePath, message);
     }
 
-    /** Later metric tasks fill nesting and maintainability. */
+    /** Later metric tasks fill maintainability. */
     private static FileMetrics fileMetrics(String source, CompilationUnit unit) {
         LineCounter.Counts lines = LineCounter.count(source, unit);
         List<MethodMetrics> methods = Cyclomatic.methods(unit);
         int cyclomatic = methods.stream().mapToInt(MethodMetrics::cyclomatic).sum();
+        int maxLoopNesting = methods.stream().mapToInt(MethodMetrics::loopNesting).max().orElse(0);
         Halstead halstead = HalsteadMetrics.measure(unit);
         return new FileMetrics(
                 lines.physical(),
@@ -37,7 +38,7 @@ public final class Analyzer {
                 lines.comment(),
                 lines.blank(),
                 cyclomatic,
-                0,
+                maxLoopNesting,
                 halstead,
                 0,
                 methods);

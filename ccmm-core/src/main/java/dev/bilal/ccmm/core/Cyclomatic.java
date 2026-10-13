@@ -40,7 +40,12 @@ final class Cyclomatic {
     private static MethodMetrics metrics(CallableDeclaration<?> declaration) {
         int line = declaration.getBegin().map(position -> position.line).orElse(1);
         return new MethodMetrics(
-                declaration.getNameAsString(), line, score(declaration), 0, HalsteadMetrics.measure(declaration), 0);
+                declaration.getNameAsString(),
+                line,
+                score(declaration),
+                LoopNesting.depth(declaration),
+                HalsteadMetrics.measure(declaration),
+                0);
     }
 
     private static int score(CallableDeclaration<?> declaration) {

@@ -152,7 +152,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       issue:      #10
 
 #### P1-T06 Loop nesting
-- [ ] P1-T06 Loop nesting
+- [x] P1-T06 Loop nesting
       why:        The legacy depth counter treats `double` as a `do` loop.
       scope:      `ccmm-core`
       depends on: P1-T01
