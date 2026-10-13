@@ -181,7 +181,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       pr:         #38
 
 #### P1-T08 Project scan
-- [ ] P1-T08 Project scan
+- [x] P1-T08 Project scan
       why:        The CLI and the IDE open directories, not single pasted buffers.
       scope:      `ccmm-core` and `docs/benchmarks/project-scan.md`
       depends on: P1-T01, P1-T07
@@ -192,6 +192,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       verify:     `mvn -B -ntp -pl ccmm-core test`
       size:       M
       issue:      #13
+      pr:         #39
 
 ### Phase 2 — CLI
 

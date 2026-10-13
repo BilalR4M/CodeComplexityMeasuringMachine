@@ -3,6 +3,7 @@ package dev.bilal.ccmm.core;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.Problem;
 import com.github.javaparser.ast.CompilationUnit;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,10 @@ public final class Analyzer {
             message = "parse failed";
         }
         return new AnalysisResult.Failed(relativePath, message);
+    }
+
+    public ProjectReport scan(Path projectRoot) {
+        return ProjectScanner.scan(this, projectRoot);
     }
 
     private static FileMetrics fileMetrics(String source, CompilationUnit unit) {
