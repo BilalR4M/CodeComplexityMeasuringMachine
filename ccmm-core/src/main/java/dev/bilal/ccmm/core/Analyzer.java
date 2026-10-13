@@ -14,7 +14,7 @@ public final class Analyzer {
         var parsed = new JavaParser().parse(source);
         if (parsed.isSuccessful() && parsed.getResult().isPresent()) {
             CompilationUnit unit = parsed.getResult().get();
-            return new AnalysisResult.Ok(relativePath, withLineCounts(source, unit));
+            return new AnalysisResult.Ok(relativePath, fileMetrics(source, unit));
         }
         String message = parsed.getProblems().stream()
                 .map(Problem::getMessage)
@@ -25,19 +25,21 @@ public final class Analyzer {
         return new AnalysisResult.Failed(relativePath, message);
     }
 
-    /** Later metric tasks fill the fields after the line counts. */
-    private static FileMetrics withLineCounts(String source, CompilationUnit unit) {
+    /** Later metric tasks fill nesting, Halstead, and maintainability. */
+    private static FileMetrics fileMetrics(String source, CompilationUnit unit) {
         LineCounter.Counts lines = LineCounter.count(source, unit);
+        List<MethodMetrics> methods = Cyclomatic.methods(unit);
+        int cyclomatic = methods.stream().mapToInt(MethodMetrics::cyclomatic).sum();
         Halstead halstead = new Halstead(0, 0, 0, 0, 0, 0, 0, 0, 0);
         return new FileMetrics(
                 lines.physical(),
                 lines.code(),
                 lines.comment(),
                 lines.blank(),
-                0,
+                cyclomatic,
                 0,
                 halstead,
                 0,
-                List.of());
+                methods);
     }
 }

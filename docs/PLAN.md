@@ -111,7 +111,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       pr:         #32
 
 #### P1-T03 Cyclomatic complexity
-- [ ] P1-T03 Cyclomatic complexity
+- [x] P1-T03 Cyclomatic complexity
       why:        The legacy counter treats `else`, `return`, and `throw` as branches.
       scope:      `ccmm-core`
       depends on: P1-T01
