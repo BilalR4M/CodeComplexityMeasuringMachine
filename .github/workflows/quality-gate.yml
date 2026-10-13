@@ -1,4 +1,4 @@
-# Dormant until `.ccmm.yml` exists (Phase 1) and the CLI implements `gate`.
+# Dormant until a project adds `.ccmm.yml`. `gate` is implemented.
 name: quality-gate
 on:
   pull_request:

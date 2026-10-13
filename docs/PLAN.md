@@ -227,7 +227,7 @@ Goal: the shaded CLI jar analyzes, gates, and reports with `ccmm-core`. Exit cri
       pr:         #41
 
 #### P2-T03 Gate command
-- [ ] P2-T03 Gate command
+- [x] P2-T03 Gate command
       why:        Reviewers need a pass or fail on the methods a branch actually changed.
       scope:      `ccmm-cli`
       depends on: P2-T01, P2-T02
@@ -239,6 +239,7 @@ Goal: the shaded CLI jar analyzes, gates, and reports with `ccmm-core`. Exit cri
       verify:     `mvn -B -ntp -pl ccmm-cli -am verify`
       size:       L
       issue:      #16
+      pr:         #42
 
 #### P2-T04 Report command
 - [ ] P2-T04 Report command

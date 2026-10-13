@@ -71,7 +71,7 @@ class AnalyzeCommandTest {
 
         assertEquals(2, run().code);
         assertEquals(2, run("analyze").code);
-        assertEquals(2, run("gate", "--base", "HEAD").code);
+        assertEquals(2, run("report", root.toString()).code);
         assertEquals(2, run("analyze", "--format", "yaml", file.toString()).code);
         assertEquals(2, run("analyze", file.toString(), "extra").code);
         assertEquals(2, run("analyze", root.resolve("missing.java").toString()).code);
