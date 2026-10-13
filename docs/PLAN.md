@@ -332,6 +332,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       verify:     `mvn -B -ntp -pl ccmm-collab-protocol test`
       size:       L
       issue:      #22
+      pr:         #49
 
 #### P4-T02 Path checks
 - [ ] P4-T02 Path checks
