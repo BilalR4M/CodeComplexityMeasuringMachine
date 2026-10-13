@@ -374,4 +374,4 @@ Do not pick these tasks while the #3 is open.
 
 | Version | Change | Reason | PR |
 |---|---|---|---|
-| 1 | Initial proposed plan | Planning protocol, issue #1 | this PR |
+| 1 | Initial proposed plan | Planning protocol, issue #1 | #27 |
