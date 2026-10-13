@@ -64,6 +64,18 @@ class CyclomaticTest {
         assertEquals(5, file.cyclomatic());
     }
 
+    @Test
+    void aMethodKeepsTheCodeLinesUsedForItsMaintainability() {
+        FileMetrics file = metrics("""
+                class A {
+                    void m() {
+                        int x = 1;
+                    }
+                }
+                """);
+        assertEquals(3, file.methods().getFirst().codeLines());
+    }
+
     private int methodComplexity(String method) {
         FileMetrics file = metrics("class A { " + method + " }");
         assertEquals(1, file.methods().size());

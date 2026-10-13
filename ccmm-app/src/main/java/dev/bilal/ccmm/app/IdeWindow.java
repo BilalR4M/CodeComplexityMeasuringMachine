@@ -20,6 +20,7 @@ public final class IdeWindow {
     private final AnalysisScheduler analysis;
     private final TreeView<FileNode> tree = new TreeView<>();
     private final CodeArea editor = new CodeArea();
+    private final MetricsPanel panel = new MetricsPanel();
     private final BorderPane root = new BorderPane();
     private final Scene scene = new Scene(root, 1100, 700);
     private Runnable onListed = () -> {};
@@ -28,6 +29,7 @@ public final class IdeWindow {
     private Path projectRoot;
     private String currentRelative;
     private AnalysisResult latest;
+    private AnalysisResult.Ok lastGood;
     private int openGeneration;
 
     public IdeWindow() {
@@ -55,7 +57,9 @@ public final class IdeWindow {
         root.setTop(new MenuBar(file));
         root.setLeft(tree);
         root.setCenter(editor);
+        root.setRight(panel);
         editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
+        editor.caretPositionProperty().addListener((obs, previous, current) -> panel.caretMoved(caretLine()));
     }
 
     public Scene scene() {
@@ -90,6 +94,10 @@ public final class IdeWindow {
         return latest;
     }
 
+    String panelText() {
+        return panel.text();
+    }
+
     public void open(Path directory) {
         if (directory == null || !Files.isDirectory(directory)) {
             return;
@@ -116,7 +124,12 @@ public final class IdeWindow {
             if (ticket != openGeneration || text == null) {
                 return;
             }
-            currentRelative = relative(file);
+            String next = relative(file);
+            if (currentRelative == null || !currentRelative.equals(next)) {
+                lastGood = null;
+                panel.showUnparsed("");
+            }
+            currentRelative = next;
             editor.replaceText(text);
             onOpened.run();
         }));
@@ -131,7 +144,31 @@ public final class IdeWindow {
 
     private void publish(AnalysisResult result) {
         latest = result;
+        String path = switch (result) {
+            case AnalysisResult.Ok ok -> ok.relativePath();
+            case AnalysisResult.Failed failed -> failed.relativePath();
+        };
+        if (currentRelative != null && currentRelative.equals(path)) {
+            switch (result) {
+                case AnalysisResult.Ok ok -> {
+                    lastGood = ok;
+                    panel.showFresh(ok, caretLine());
+                }
+                case AnalysisResult.Failed failed -> {
+                    if (lastGood != null && path.equals(lastGood.relativePath())) {
+                        panel.showStale(lastGood, caretLine());
+                    } else {
+                        lastGood = null;
+                        panel.showUnparsed(failed.message());
+                    }
+                }
+            }
+        }
         onAnalyzed.run();
+    }
+
+    private int caretLine() {
+        return editor.getCurrentParagraph() + 1;
     }
 
     private String relative(Path file) {

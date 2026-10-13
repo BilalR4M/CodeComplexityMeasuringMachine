@@ -40,12 +40,14 @@ final class Cyclomatic {
     private static MethodMetrics metrics(CallableDeclaration<?> declaration, boolean[] codeLines) {
         int line = declaration.getBegin().map(position -> position.line).orElse(1);
         int end = declaration.getEnd().map(position -> position.line).orElse(line);
+        int code = LineCounter.codeLinesIn(codeLines, line, end);
         Halstead halstead = HalsteadMetrics.measure(declaration);
         int cyclomatic = score(declaration);
-        double maintainability = Maintainability.index(halstead.volume(), cyclomatic, LineCounter.codeLinesIn(codeLines, line, end));
+        double maintainability = Maintainability.index(halstead.volume(), cyclomatic, code);
         return new MethodMetrics(
                 declaration.getNameAsString(),
                 line,
+                code,
                 cyclomatic,
                 LoopNesting.depth(declaration),
                 halstead,
