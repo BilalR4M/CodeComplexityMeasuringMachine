@@ -83,7 +83,7 @@ Goal: prove the two decisions that can invalidate this plan. Exit criteria: `doc
 Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory. Exit criteria: `mvn -B -ntp -pl ccmm-core test` passes, including the golden fixture.
 
 #### P1-T01 Analysis result and parse
-- [ ] P1-T01 Analysis result and parse
+- [x] P1-T01 Analysis result and parse
       why:        Every later metric needs one parse result that cannot throw a syntax error at the UI.
       scope:      `ccmm-core`
       depends on: none
@@ -94,6 +94,7 @@ Goal: `ccmm-core` reports the ADR-0004 metrics for one file and for a directory.
       verify:     `mvn -B -ntp -pl ccmm-core test`
       size:       M
       issue:      #6
+      pr:         #30
 
 #### P1-T02 Line counts
 - [ ] P1-T02 Line counts
