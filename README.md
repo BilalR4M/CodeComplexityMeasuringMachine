@@ -19,6 +19,7 @@ GitHub Packages requires a token with `read:packages` in `~/.m2/settings.xml`.
 ```
 docker run -p 8080:8080 ghcr.io/bilalr4m/ccmm-collab-server:latest
 ```
+The process prints an invite token. Set `CCMM_INVITE_TOKEN` to choose the token instead.
 
 ## Develop
 See [AGENTS.md](AGENTS.md) and [docs/PLAN.md](docs/PLAN.md).
