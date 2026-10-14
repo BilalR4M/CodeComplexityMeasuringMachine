@@ -1145,4 +1145,4 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
 |---|---|---|---|
 | 1 | Initial proposed plan | Planning protocol, issue #1 | #27 |
 | 2 | Accept ADR-0002, ADR-0004, ADR-0005, ADR-0006, and ADR-0007 | Owner decision, issue #3 | #48 |
-| 3 | Propose the IDE-grade UX program on top of the finished phases | Verified assessment, design system, proposed ADR-0008 through ADR-0015, issues #54-#124. Version 2 stays the approved baseline. | |
+| 3 | Propose the IDE-grade UX program on top of the finished phases | Verified assessment, design system, proposed ADR-0008 through ADR-0015, issues #54-#124. Version 2 stays the approved baseline. | #125 |
