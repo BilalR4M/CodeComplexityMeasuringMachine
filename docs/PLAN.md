@@ -335,7 +335,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       pr:         #49
 
 #### P4-T02 Path checks
-- [ ] P4-T02 Path checks
+- [x] P4-T02 Path checks
       why:        A peer-supplied path must not read or write outside the project.
       scope:      `ccmm-collab-protocol` or `ccmm-core`
       depends on: P4-T01, #3
@@ -345,6 +345,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       verify:     `mvn -B -ntp -pl ccmm-collab-protocol -am test`
       size:       S
       issue:      #23
+      pr:         #50
 
 #### P4-T03 Relay server
 - [ ] P4-T03 Relay server
