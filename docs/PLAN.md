@@ -363,7 +363,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       pr:         #51
 
 #### P4-T04 Co-editing client
-- [ ] P4-T04 Co-editing client
+- [x] P4-T04 Co-editing client
       why:        Remote edits have to land on the JavaFX thread without breaking local undo.
       scope:      `ccmm-app`
       depends on: P4-T03, P3-T02, #3
