@@ -345,6 +345,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       verify:     `mvn -B -ntp -pl ccmm-collab-protocol -am test`
       size:       S
       issue:      #23
+      pr:         #50
 
 #### P4-T03 Relay server
 - [ ] P4-T03 Relay server
