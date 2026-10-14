@@ -132,6 +132,78 @@ Each WebSocket text frame is one JSON object. The `type` field is `join`, `prese
 
 `scripts/package.sh` and `.github/workflows/package.yml` stay as they are. Package-check has already produced unsigned installers for `windows-x64`, `linux-x64`, `macos-arm64`, and `macos-x64`. Signing remains the optional secrets in `docs/RELEASING.md`.
 
+## Workbench (proposed)
+
+The running window is one `BorderPane` owned by `IdeWindow`. The UX program introduces a workbench so metrics and collaboration can decorate a document without each feature editing the scene directly. This section is the target. It does not replace the `Analyzer` signatures above, and the JavaFX thread still does nothing but update the scene.
+
+```mermaid
+flowchart LR
+  activity[Activity bar]
+  side[Side bar]
+  editor[Editor area]
+  inspector[Inspector]
+  bottom[Bottom panel]
+  status[Status bar]
+  activity --> side
+  editor --> inspector
+  editor --> bottom
+  editor --> status
+```
+
+```java
+public final class Workbench {
+    public void execute(String commandId) { /* looks up Command and runs it on the FX thread */ }
+    public Document activeDocument() { /* ... */ }
+    public void show(RegionId region, boolean visible) { /* ... */ }
+}
+
+public interface Command {
+    String id();
+    String title();
+    void run(Workbench workbench);
+}
+
+public final class Document {
+    public String relativePath() { /* project-relative, '/' separators */ }
+    public String text() { /* ... */ }
+    public boolean dirty() { /* ... */ }
+    public void replace(int start, int end, String text, EditOrigin origin) { /* ... */ }
+}
+
+public enum EditOrigin { LOCAL, REMOTE }
+
+public enum RegionId { ACTIVITY, SIDE, EDITOR, INSPECTOR, BOTTOM, STATUS }
+```
+
+`replace` with `REMOTE` is the batched path that already exists in `RemoteEdits`: one edit on the JavaFX thread, excluded from local undo. `LOCAL` is typing. Analysis still copies the buffer after 300 ms of quiet and calls `Analyzer.analyze` off-thread. Only a `.java` path is analyzed.
+
+Commands and key bindings live in the workbench, not in menu item handlers. The same `Command` is what the palette runs. Bindings use Ctrl on Windows and Linux and Cmd on macOS. Settings (theme, font size, ligatures, relay URL, display name) persist in the OS user-config directory, not in the project.
+
+### Decorations
+
+Gutter chips, remote carets, and comment anchors are decorations on a document. They are not extra copies of the text.
+
+```java
+public interface Decoration {
+    String documentPath();
+    int startOffset();
+    int endOffset();
+}
+
+public record GutterChip(String documentPath, int startOffset, int endOffset, int cyclomatic, String band, boolean stale)
+        implements Decoration {}
+
+public record RemoteCaret(String documentPath, int startOffset, int endOffset, String peerId, String name, int colorIndex)
+        implements Decoration {}
+
+public record ThreadAnchor(String documentPath, int startOffset, int endOffset, String threadId)
+        implements Decoration {}
+```
+
+`band` is a token name (`success`, `warn`, `danger`), not a hex colour. A failed parse keeps the last `GutterChip` values and sets `stale`. Remote carets move when remote ops are applied. They do not scroll the viewport unless this client is following that peer. An anchor is transformed with the same OT as the text (ADR-0002, spike E0-T03).
+
+The inspector, outline, status bar, and problems panel read `AnalysisResult` and these decorations. They do not call the parser themselves.
+
 ## Failure modes
 
 | Failure | Result |
