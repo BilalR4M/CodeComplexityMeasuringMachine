@@ -377,7 +377,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       pr:         #52
 
 #### P4-T05 Chat and presence
-- [ ] P4-T05 Chat and presence
+- [x] P4-T05 Chat and presence
       why:        v1 collaboration includes seeing who is here and talking, without sharing the tree.
       scope:      `ccmm-app`
       depends on: P4-T03, P3-T01, #3
@@ -387,6 +387,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       verify:     `mvn -B -ntp -pl ccmm-app -am test`
       size:       M
       issue:      #26
+      pr:         #53
 
 ## Change log
 
