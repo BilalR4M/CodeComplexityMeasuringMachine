@@ -387,6 +387,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       verify:     `mvn -B -ntp -pl ccmm-app -am test`
       size:       M
       issue:      #26
+      pr:         #53
 
 ## Change log
 
