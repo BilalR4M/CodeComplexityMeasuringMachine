@@ -15,6 +15,7 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.util.UndoUtils;
@@ -28,6 +29,7 @@ public final class IdeWindow {
     private final SuspendableYes localUndo = new SuspendableYes();
     private final List<Message> remotePending = new ArrayList<>();
     private final MetricsPanel panel = new MetricsPanel();
+    private final ProjectRoomPanel room = new ProjectRoomPanel();
     private final BorderPane root = new BorderPane();
     private final Scene scene = new Scene(root, 1100, 700);
     private Runnable onListed = () -> {};
@@ -65,7 +67,7 @@ public final class IdeWindow {
         root.setTop(new MenuBar(file));
         root.setLeft(tree);
         root.setCenter(editor);
-        root.setRight(panel);
+        root.setRight(new VBox(panel, room));
         editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
         editor.caretPositionProperty().addListener((obs, previous, current) -> panel.caretMoved(caretLine()));
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
@@ -105,6 +107,10 @@ public final class IdeWindow {
 
     String panelText() {
         return panel.text();
+    }
+
+    String roomText() {
+        return room.text();
     }
 
     public void open(Path directory) {
@@ -167,6 +173,7 @@ public final class IdeWindow {
         List<Message> batch = List.copyOf(remotePending);
         remotePending.clear();
         remoteFlushScheduled = false;
+        room.acceptAll(batch);
         RemoteEdits.apply(editor, localUndo, RemoteEdits.accepted(projectRoot, currentRelative, batch));
     }
 
