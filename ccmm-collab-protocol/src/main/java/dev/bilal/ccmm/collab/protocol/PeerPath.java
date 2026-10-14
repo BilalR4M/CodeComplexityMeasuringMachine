@@ -20,6 +20,35 @@ public final class PeerPath {
         if (!Files.isDirectory(projectRoot)) {
             throw new IllegalArgumentException("project root is not a directory");
         }
+        String relative = requireRelative(peerPath);
+        Path rootReal = realRoot(projectRoot);
+        Path cursor = rootReal;
+        for (String segment : relative.split("/")) {
+            cursor = cursor.resolve(segment);
+            if (!Files.exists(cursor, LinkOption.NOFOLLOW_LINKS)) {
+                continue;
+            }
+            Path real = real(cursor);
+            if (!real.startsWith(rootReal)) {
+                throw new IllegalArgumentException("path escapes the project root");
+            }
+            cursor = real;
+        }
+        if (!cursor.normalize().startsWith(rootReal)) {
+            throw new IllegalArgumentException("path escapes the project root");
+        }
+        return relative;
+    }
+
+    /**
+     * Checks the path text only. The relay calls this because it does not
+     * have the project tree. {@link #require(Path, String)} also rejects a
+     * symlink that leaves the project root.
+     */
+    public static String requireRelative(String peerPath) {
+        if (peerPath == null || peerPath.isBlank()) {
+            throw new IllegalArgumentException("path is blank");
+        }
         String slashed = peerPath.replace('\\', '/');
         if (isAbsolute(slashed)) {
             throw new IllegalArgumentException("absolute path");
@@ -40,22 +69,6 @@ public final class PeerPath {
         }
         if (relative.isEmpty()) {
             throw new IllegalArgumentException("path is blank");
-        }
-        Path rootReal = realRoot(projectRoot);
-        Path cursor = rootReal;
-        for (String segment : relative.toString().split("/")) {
-            cursor = cursor.resolve(segment);
-            if (!Files.exists(cursor, LinkOption.NOFOLLOW_LINKS)) {
-                continue;
-            }
-            Path real = real(cursor);
-            if (!real.startsWith(rootReal)) {
-                throw new IllegalArgumentException("path escapes the project root");
-            }
-            cursor = real;
-        }
-        if (!cursor.normalize().startsWith(rootReal)) {
-            throw new IllegalArgumentException("path escapes the project root");
         }
         return relative.toString();
     }

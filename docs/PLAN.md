@@ -348,7 +348,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       pr:         #50
 
 #### P4-T03 Relay server
-- [ ] P4-T03 Relay server
+- [x] P4-T03 Relay server
       why:        Co-editing needs the process ADR-0005 already publishes.
       scope:      `ccmm-collab-server`
       depends on: P4-T01, P4-T02, #3
@@ -360,6 +360,7 @@ Goal: co-edit one file, with chat and presence on the project room. ADR-0002, AD
       verify:     `mvn -B -ntp -pl ccmm-collab-server -am verify`
       size:       L
       issue:      #24
+      pr:         #51
 
 #### P4-T04 Co-editing client
 - [ ] P4-T04 Co-editing client

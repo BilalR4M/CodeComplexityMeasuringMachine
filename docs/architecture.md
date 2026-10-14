@@ -124,7 +124,9 @@ The project room carries presence and chat. A per-file room is keyed by the proj
 
 A text operation is an insert or delete at a code-unit offset, with the revision the client based it on. The relay orders operations and transforms them. Clients apply remote operations in one batched edit on the JavaFX thread. Undo pops local edits only.
 
-Every path from a peer is checked before use: it must be relative, must not contain `..`, and the normalized real path must stay inside the project root.
+Every path from a peer is checked before use: it must be relative, must not contain `..`, and the normalized real path must stay inside the project root. The relay checks the path text. The IDE also checks the real path against the project root.
+
+Each WebSocket text frame is one JSON object. The `type` field is `join`, `presence`, `chat`, `insert`, or `delete`.
 
 ## Packaging
 
