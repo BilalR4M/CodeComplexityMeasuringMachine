@@ -1,8 +1,11 @@
 package dev.bilal.ccmm.app;
 
+import dev.bilal.ccmm.collab.protocol.Message;
 import dev.bilal.ccmm.core.AnalysisResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -14,12 +17,16 @@ import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
 import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.util.UndoUtils;
+import org.reactfx.SuspendableYes;
 
 public final class IdeWindow {
     private final FileTreeController files = new FileTreeController();
     private final AnalysisScheduler analysis;
     private final TreeView<FileNode> tree = new TreeView<>();
     private final CodeArea editor = new CodeArea();
+    private final SuspendableYes localUndo = new SuspendableYes();
+    private final List<Message> remotePending = new ArrayList<>();
     private final MetricsPanel panel = new MetricsPanel();
     private final BorderPane root = new BorderPane();
     private final Scene scene = new Scene(root, 1100, 700);
@@ -31,6 +38,7 @@ public final class IdeWindow {
     private AnalysisResult latest;
     private AnalysisResult.Ok lastGood;
     private int openGeneration;
+    private boolean remoteFlushScheduled;
 
     public IdeWindow() {
         this(AnalysisScheduler.QUIET_MILLIS);
@@ -60,6 +68,7 @@ public final class IdeWindow {
         root.setRight(panel);
         editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
         editor.caretPositionProperty().addListener((obs, previous, current) -> panel.caretMoved(caretLine()));
+        editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
     }
 
     public Scene scene() {
@@ -115,6 +124,17 @@ public final class IdeWindow {
         analysis.close();
     }
 
+    void applyRemote(List<Message> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return;
+        }
+        if (Platform.isFxApplicationThread()) {
+            enqueueRemote(messages);
+        } else {
+            Platform.runLater(() -> enqueueRemote(messages));
+        }
+    }
+
     private void openFile(Path file) {
         if (file == null || !file.getFileName().toString().endsWith(".java")) {
             return;
@@ -133,6 +153,21 @@ public final class IdeWindow {
             editor.replaceText(text);
             onOpened.run();
         }));
+    }
+
+    private void enqueueRemote(List<Message> messages) {
+        remotePending.addAll(messages);
+        if (!remoteFlushScheduled) {
+            remoteFlushScheduled = true;
+            Platform.runLater(this::flushRemote);
+        }
+    }
+
+    private void flushRemote() {
+        List<Message> batch = List.copyOf(remotePending);
+        remotePending.clear();
+        remoteFlushScheduled = false;
+        RemoteEdits.apply(editor, localUndo, RemoteEdits.accepted(projectRoot, currentRelative, batch));
     }
 
     private void scheduleAnalysis(String text) {
