@@ -444,7 +444,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #56
       pr:         #128
 
-- [ ] E0-T04 Measure theme tokens at high DPI
+- [x] E0-T04 Measure theme tokens at high DPI
       why:        A token set that fails contrast or blurs at 150% is not a theme.
       scope:      spikes/e0-t04/ and docs/benchmarks/hidpi.md
       depends on: none
@@ -453,6 +453,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       spike
       issue:      #57
+      pr:         #129
 
 - [ ] E0-T05 Prove headless UI tests on CI
       why:        IdeWindowTest skips when the JVM is headless, and Ubuntu CI has no display.
