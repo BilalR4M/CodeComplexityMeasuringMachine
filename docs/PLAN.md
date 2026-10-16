@@ -554,7 +554,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #66
-      pr:         pending
+      pr:         #140
 
 - [x] E1-T09 Add a settings store
       why:        Theme, font size, relay URL, and display name have to survive a restart.
