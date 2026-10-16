@@ -510,7 +510,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #62
-      pr:         pending
+      pr:         #135
 
 - [ ] E1-T05 Add the status bar shell
       why:        Position, encoding, and metrics need a home that is not the inspector.
