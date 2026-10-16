@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.bilal.ccmm.app.document.Document;
 import dev.bilal.ccmm.core.AnalysisResult;
 import java.awt.GraphicsEnvironment;
 import java.nio.file.Files;
@@ -89,11 +90,14 @@ class IdeWindowTest {
                         TreeItem<FileNode> notes = child(window, "notes.txt");
                         window.select(notes);
                         assertEquals("", window.editor().getText());
+                        assertEquals(Document.ONLY_JAVA_MESSAGE, window.workbench().statusBar().leftText());
                         window.setOnOpened(() -> {
                             try {
                                 assertEquals("class A {}", window.editor().getText());
+                                assertFalse(window.document().dirty());
                                 window.editor().insertText(window.editor().getLength(), "\n// typed");
                                 assertTrue(window.editor().getText().endsWith("\n// typed"));
+                                assertTrue(window.document().dirty());
                                 stage.close();
                                 window.close();
                             } catch (Throwable thrown) {

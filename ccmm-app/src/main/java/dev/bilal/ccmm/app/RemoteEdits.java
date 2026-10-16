@@ -1,5 +1,7 @@
 package dev.bilal.ccmm.app;
 
+import dev.bilal.ccmm.app.document.Document;
+import dev.bilal.ccmm.app.document.EditOrigin;
 import dev.bilal.ccmm.collab.protocol.Message;
 import dev.bilal.ccmm.collab.protocol.PeerPath;
 import dev.bilal.ccmm.collab.protocol.TextOp;
@@ -39,14 +41,17 @@ final class RemoteEdits {
         return ops;
     }
 
-    static void apply(CodeArea editor, SuspendableYes localUndo, List<TextOp> ops) {
+    static void apply(Document document, CodeArea editor, SuspendableYes localUndo, List<TextOp> ops) {
         if (editor == null || localUndo == null || ops == null || ops.isEmpty()) {
             return;
         }
-        String current = editor.getText();
+        String current = document != null ? document.text() : editor.getText();
         String updated = fold(current, ops);
         if (updated.equals(current)) {
             return;
+        }
+        if (document != null) {
+            document.replace(0, current.length(), updated, EditOrigin.REMOTE);
         }
         int caret = caretAfter(editor.getCaretPosition(), current, ops);
         var batch = editor.createMultiChange(1);
