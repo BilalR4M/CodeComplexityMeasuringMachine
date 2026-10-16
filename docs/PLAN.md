@@ -411,7 +411,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
 
 #### E0 — spikes
 
-- [ ] E0-T01 Compare editor components
+- [x] E0-T01 Compare editor components
       why:        Folding, a 5 MB file, and gutter decorations were never measured.
       scope:      spikes/e0-t01/ and docs/benchmarks/editor-bakeoff.md
       depends on: none
@@ -420,6 +420,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       spike
       issue:      #54
+      pr:         pending
 
 - [ ] E0-T02 Compare highlighting engines
       why:        Highlighting can stall typing, and the engine is undecided.
