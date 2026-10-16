@@ -499,7 +499,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       S
       kind:       ui
       issue:      #61
-      pr:         pending
+      pr:         #134
 
 - [ ] E1-T04 Add the bottom panel shell
       why:        Problems, metrics, terminal, and chat need a shared panel.
