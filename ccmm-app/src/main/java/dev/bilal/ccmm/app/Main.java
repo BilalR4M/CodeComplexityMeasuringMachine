@@ -18,6 +18,8 @@ public final class Main extends Application {
         List<String> args = getParameters().getRaw();
         if (args.size() == 1) {
             window.open(Path.of(args.get(0)));
+        } else {
+            window.restoreSession();
         }
     }
 }
