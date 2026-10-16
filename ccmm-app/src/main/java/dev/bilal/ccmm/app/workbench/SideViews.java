@@ -8,6 +8,7 @@ import javafx.scene.layout.StackPane;
 public final class SideViews {
     private final StackPane host = new StackPane();
     private Node explorer;
+    private Node settings;
     private String folderName;
 
     public SideViews() {
@@ -20,6 +21,10 @@ public final class SideViews {
 
     public void setExplorer(Node explorer) {
         this.explorer = explorer;
+    }
+
+    public void setSettings(Node settings) {
+        this.settings = settings;
     }
 
     public void setFolderName(String folderName) {
@@ -37,6 +42,9 @@ public final class SideViews {
     private Node content(ActivityView view) {
         if (view == ActivityView.EXPLORER) {
             return explorer == null ? label(SideViewCopy.empty(ActivityView.EXPLORER, null), "explorer") : explorer;
+        }
+        if (view == ActivityView.SETTINGS) {
+            return settings == null ? label(emptyCopy(ActivityView.SETTINGS), "settings") : settings;
         }
         return label(emptyCopy(view), view.name().toLowerCase());
     }
