@@ -11,7 +11,7 @@ Standalone spike notes. Does not change `.github/workflows/ci.yml` until ADR-001
 ## Command (Linux)
 
 ```bash
-xvfb-run -a mvn -B -ntp -pl ccmm-app -am test -Dtest=IdeWindowTest
+xvfb-run -a mvn -B -ntp -pl ccmm-app -am test -Dtest=IdeWindowTest -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
 Monocle was not required. TestFX was not added.

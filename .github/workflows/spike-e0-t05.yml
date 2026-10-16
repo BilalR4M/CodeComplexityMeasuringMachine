@@ -16,9 +16,9 @@ jobs:
       - name: IdeWindowTest without display (expect skips)
         continue-on-error: true
         run: |
-          mvn -B -ntp -pl ccmm-app -am test -Dtest=IdeWindowTest | tee bare.log
+          mvn -B -ntp -pl ccmm-app -am test -Dtest=IdeWindowTest -Dsurefire.failIfNoSpecifiedTests=false | tee bare.log
           grep -E "Tests run: 6, .* Skipped: 6" bare.log
       - name: IdeWindowTest under xvfb-run
         run: |
-          xvfb-run -a mvn -B -ntp -pl ccmm-app -am test -Dtest=IdeWindowTest | tee xvfb.log
+          xvfb-run -a mvn -B -ntp -pl ccmm-app -am test -Dtest=IdeWindowTest -Dsurefire.failIfNoSpecifiedTests=false | tee xvfb.log
           grep -E "Tests run: 6, Failures: 0, Errors: 0, Skipped: 0" xvfb.log
