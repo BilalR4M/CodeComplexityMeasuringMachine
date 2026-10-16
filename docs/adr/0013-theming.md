@@ -1,5 +1,5 @@
 # ADR-0013: Theming
-Status: proposed
+Status: accepted
 
 ## Context
 The window uses Modena and has no stylesheet. The brief asks for a dark default, a light theme, and one token set. AtlantaFX is the obvious JavaFX theme library. Its README, retrieved 2026-10-14, requires Java 25+ and JavaFX 27+. ADR-0012 recommends staying on Java 21.
@@ -17,4 +17,7 @@ A no-go is a contrast or HiDPI failure of the token values. The fix is a token c
 UI issues reference token names. Raw hex in `ccmm-app` is a review failure. JavaFX regular and bold weights are the only weights in the spec.
 
 ## Measured result (E0-T04, 2026-10-16)
-`docs/benchmarks/hidpi.md` ends with **go**. Primary and secondary text ratios match TOKENS.md; 24 px tree rows were not clipped at 100/150/200% on Windows for dark and light. AtlantaFX was not added. This ADR stays **proposed**.
+`docs/benchmarks/hidpi.md` ends with **go**. Primary and secondary text ratios match TOKENS.md; 24 px tree rows were not clipped at 100/150/200% on Windows for dark and light. AtlantaFX was not added.
+
+## Decision (2026-10-16)
+Accepted: token stylesheets only. Dark default. No AtlantaFX. Matches settings keys `dark`|`light` (E1-T09).
