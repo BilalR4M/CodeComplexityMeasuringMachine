@@ -501,7 +501,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #61
       pr:         #134
 
-- [ ] E1-T04 Add the bottom panel shell
+- [x] E1-T04 Add the bottom panel shell
       why:        Problems, metrics, terminal, and chat need a shared panel.
       scope:      ccmm-app workbench
       depends on: E1-T01
@@ -510,6 +510,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #62
+      pr:         pending
 
 - [ ] E1-T05 Add the status bar shell
       why:        Position, encoding, and metrics need a home that is not the inspector.
