@@ -3,6 +3,7 @@ package dev.bilal.ccmm.app;
 import dev.bilal.ccmm.app.workbench.ActivityBar;
 import dev.bilal.ccmm.app.workbench.ActivityView;
 import dev.bilal.ccmm.app.workbench.RegionId;
+import dev.bilal.ccmm.app.workbench.SideBar;
 import dev.bilal.ccmm.app.workbench.SideViews;
 import dev.bilal.ccmm.app.workbench.Workbench;
 import dev.bilal.ccmm.collab.protocol.Message;
@@ -41,6 +42,7 @@ public final class IdeWindow {
     private final Workbench workbench = new Workbench();
     private final ActivityBar activityBar = new ActivityBar();
     private final SideViews sideViews = new SideViews();
+    private final SideBar sideBar = new SideBar();
     private final Scene scene = new Scene(workbench.root(), 1280, 800);
     private Runnable onListed = () -> {};
     private Runnable onOpened = () -> {};
@@ -77,16 +79,20 @@ public final class IdeWindow {
         workbench.setMenuBar(new MenuBar(file));
         sideViews.setExplorer(tree);
         sideViews.show(ActivityView.EXPLORER);
+        sideBar.setContent(sideViews.host());
+        sideBar.setActiveView(ActivityView.EXPLORER);
+        sideBar.setOnCollapse(this::toggleSideBar);
         activityBar.setOnSelect(view -> {
             sideViews.show(view);
-            workbench.setContent(RegionId.SIDE, sideViews.host());
+            sideBar.setContent(sideViews.host());
+            sideBar.setActiveView(view);
             if (!workbench.isShowing(RegionId.SIDE)) {
                 workbench.show(RegionId.SIDE, true);
                 activityBar.setEnabled(true);
             }
         });
         workbench.setContent(RegionId.ACTIVITY, activityBar);
-        workbench.setContent(RegionId.SIDE, sideViews.host());
+        workbench.setContent(RegionId.SIDE, sideBar);
         workbench.setContent(RegionId.EDITOR, editor);
         workbench.setContent(RegionId.INSPECTOR, new VBox(panel, room));
         workbench.setContent(RegionId.BOTTOM, new Label("Problems"));
@@ -102,6 +108,10 @@ public final class IdeWindow {
 
     public SideViews sideViews() {
         return sideViews;
+    }
+
+    public SideBar sideBar() {
+        return sideBar;
     }
 
     public Scene scene() {
@@ -284,11 +294,14 @@ public final class IdeWindow {
         scene.getAccelerators()
                 .put(new KeyCodeCombination(KeyCode.COMMA, KeyCombination.CONTROL_DOWN),
                         () -> activityBar.select(ActivityView.SETTINGS));
-        scene.getAccelerators().put(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN), () -> {
-            boolean show = !workbench.isShowing(RegionId.SIDE);
-            workbench.show(RegionId.SIDE, show);
-            activityBar.setEnabled(show);
-        });
+        scene.getAccelerators()
+                .put(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN), this::toggleSideBar);
+    }
+
+    private void toggleSideBar() {
+        boolean show = !workbench.isShowing(RegionId.SIDE);
+        workbench.show(RegionId.SIDE, show);
+        activityBar.setEnabled(show);
     }
 
     private static TreeItem<FileNode> item(FileNode node) {
