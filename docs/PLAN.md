@@ -442,7 +442,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       spike
       issue:      #56
-      pr:         pending
+      pr:         #128
 
 - [ ] E0-T04 Measure theme tokens at high DPI
       why:        A token set that fails contrast or blurs at 150% is not a theme.
