@@ -1,5 +1,5 @@
 # PLAN
-Status: PROPOSED
+Status: APPROVED
 Version: 3
 
 The owner sets `Status: APPROVED` and adds the `plan-approved` label. No implementation starts before that.
