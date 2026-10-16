@@ -468,7 +468,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
 
 #### E1 — workbench
 
-- [ ] E1-T01 Add workbench regions
+- [x] E1-T01 Add workbench regions
       why:        One BorderPane cannot host the inspector, the panel, and the status bar.
       scope:      ccmm-app workbench package
       depends on: none
@@ -477,6 +477,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       ui
       issue:      #59
+      pr:         #131
 
 - [ ] E1-T02 Add the activity bar
       why:        The side bar needs a way to switch views.
