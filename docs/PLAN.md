@@ -555,7 +555,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       kind:       ui
       issue:      #66
 
-- [ ] E1-T09 Add a settings store
+- [x] E1-T09 Add a settings store
       why:        Theme, font size, relay URL, and display name have to survive a restart.
       scope:      ccmm-app settings
       depends on: E1-T06
@@ -564,6 +564,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #67
+      pr:         #139
 
 - [ ] E1-T10 Restore the session
       why:        Reopening the IDE should bring back the folder and the open files.

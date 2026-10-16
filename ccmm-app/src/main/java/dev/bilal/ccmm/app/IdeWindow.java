@@ -1,5 +1,8 @@
 package dev.bilal.ccmm.app;
 
+import dev.bilal.ccmm.app.settings.ConfirmPrompt;
+import dev.bilal.ccmm.app.settings.SettingsPanel;
+import dev.bilal.ccmm.app.settings.SettingsStore;
 import dev.bilal.ccmm.app.workbench.ActivityBar;
 import dev.bilal.ccmm.app.workbench.ActivityView;
 import dev.bilal.ccmm.app.workbench.BottomPanel;
@@ -18,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -46,6 +50,8 @@ public final class IdeWindow {
     private final SideBar sideBar = new SideBar();
     private final BottomPanel bottomPanel = new BottomPanel();
     private final Keymap keymap = Keymap.seeded(Keymap.detectPlatform());
+    private final SettingsStore settingsStore;
+    private final SettingsPanel settingsPanel;
     private final Scene scene = new Scene(workbench.root(), 1280, 800);
     private Runnable onListed = () -> {};
     private Runnable onOpened = () -> {};
@@ -58,14 +64,20 @@ public final class IdeWindow {
     private boolean remoteFlushScheduled;
 
     public IdeWindow() {
-        this(AnalysisScheduler.QUIET_MILLIS, DirectoryPrompt.chooser());
+        this(AnalysisScheduler.QUIET_MILLIS, DirectoryPrompt.chooser(), new SettingsStore(SettingsStore.defaultDirectory()));
     }
 
     IdeWindow(long analysisDelayMs) {
-        this(analysisDelayMs, DirectoryPrompt.chooser());
+        this(analysisDelayMs, DirectoryPrompt.chooser(), new SettingsStore(SettingsStore.defaultDirectory()));
     }
 
     IdeWindow(long analysisDelayMs, DirectoryPrompt directoryPrompt) {
+        this(analysisDelayMs, directoryPrompt, new SettingsStore(SettingsStore.defaultDirectory()));
+    }
+
+    IdeWindow(long analysisDelayMs, DirectoryPrompt directoryPrompt, SettingsStore settingsStore) {
+        this.settingsStore = Objects.requireNonNull(settingsStore);
+        this.settingsPanel = new SettingsPanel(settingsStore, ConfirmPrompt.dialog());
         analysis = new AnalysisScheduler(analysisDelayMs, Platform::runLater);
         tree.setShowRoot(true);
         tree.setCellFactory(view -> new TreeCell<>() {
@@ -87,6 +99,7 @@ public final class IdeWindow {
         Menu file = new Menu("File", null, open);
         workbench.setMenuBar(new MenuBar(file));
         sideViews.setExplorer(tree);
+        sideViews.setSettings(settingsPanel.root());
         sideViews.show(ActivityView.EXPLORER);
         sideBar.setContent(sideViews.host());
         sideBar.setActiveView(ActivityView.EXPLORER);
@@ -133,6 +146,14 @@ public final class IdeWindow {
 
     public Keymap keymap() {
         return keymap;
+    }
+
+    public SettingsStore settingsStore() {
+        return settingsStore;
+    }
+
+    public SettingsPanel settingsPanel() {
+        return settingsPanel;
     }
 
     public Scene scene() {
