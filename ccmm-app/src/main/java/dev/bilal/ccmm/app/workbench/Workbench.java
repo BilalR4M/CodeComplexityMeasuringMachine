@@ -33,7 +33,7 @@ public final class Workbench {
     private final StackPane editor = regionStack("editor");
     private final StackPane inspector = regionStack("inspector");
     private final StackPane bottom = regionStack("bottom");
-    private final Label status = new Label();
+    private final StatusBar status = new StatusBar();
     private final SplitPane vertical = new SplitPane();
     private final SplitPane horizontal = new SplitPane();
     private final BorderPane center = new BorderPane();
@@ -52,11 +52,6 @@ public final class Workbench {
         side.setMinWidth(SIDE_MIN);
         inspector.setMinWidth(INSPECTOR_MIN);
         bottom.setMinHeight(BOTTOM_MIN);
-        status.setId("status-bar");
-        status.setAccessibleText("Status");
-        status.setMinHeight(24);
-        status.setMaxHeight(24);
-        status.setPrefHeight(24);
 
         vertical.getItems().addAll(editor, bottom);
         vertical.setOrientation(Orientation.VERTICAL);
@@ -84,12 +79,16 @@ public final class Workbench {
         return root;
     }
 
-    public Label statusBar() {
+    public StatusBar statusBar() {
         return status;
     }
 
     public void setStatus(String text) {
-        status.setText(text == null ? "" : text);
+        if (text == null || text.isBlank()) {
+            status.clearMessage();
+        } else {
+            status.setLeftMessage(text);
+        }
     }
 
     public void setMenuBar(Node menuBar) {
@@ -106,7 +105,11 @@ public final class Workbench {
             case EDITOR -> editor.getChildren().setAll(content);
             case INSPECTOR -> inspector.getChildren().setAll(content);
             case BOTTOM -> bottom.getChildren().setAll(content);
-            case STATUS -> status.setText(content instanceof Label label ? label.getText() : "");
+            case STATUS -> {
+                if (content instanceof Label label) {
+                    status.setLeftMessage(label.getText());
+                }
+            }
         }
     }
 

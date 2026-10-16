@@ -512,7 +512,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #62
       pr:         #135
 
-- [ ] E1-T05 Add the status bar shell
+- [x] E1-T05 Add the status bar shell
       why:        Position, encoding, and metrics need a home that is not the inspector.
       scope:      ccmm-app workbench
       depends on: E1-T01
@@ -521,6 +521,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #63
+      pr:         #136
 
 - [ ] E1-T06 Add a command registry
       why:        The palette and the menu must run the same commands.
