@@ -490,7 +490,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #60
       pr:         #132
 
-- [ ] E1-T03 Add the side bar shell
+- [x] E1-T03 Add the side bar shell
       why:        Views need a title and a collapse control.
       scope:      ccmm-app workbench
       depends on: E1-T02
@@ -499,6 +499,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       S
       kind:       ui
       issue:      #61
+      pr:         pending
 
 - [ ] E1-T04 Add the bottom panel shell
       why:        Problems, metrics, terminal, and chat need a shared panel.
