@@ -18,3 +18,5 @@ E0-T03 proves that a comment anchor (path, start offset, end offset) transformed
 
 ## Consequences
 E7 extends the existing relay. It does not replace it. New message types (handshake, follow, anchor, role) are specified on the E7 issues. Adding them is a protocol change; the implementing agent stops with `Decision needed` if the owner has not accepted this ADR.
+
+E0-T03 measured go: `AnchorTransformer` keeps a thread range attached through the same OT log as the text (`docs/benchmarks/anchor-ot.md`). This ADR stays proposed.

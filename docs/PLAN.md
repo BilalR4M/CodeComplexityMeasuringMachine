@@ -433,7 +433,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #55
       pr:         #127
 
-- [ ] E0-T03 Prove anchors survive operational transform
+- [x] E0-T03 Prove anchors survive operational transform
       why:        Comment threads have to move with the text or they point at the wrong lines.
       scope:      ccmm-collab-protocol tests and docs/benchmarks/anchor-ot.md
       depends on: none (Phase 4 OT is done)
@@ -442,6 +442,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       spike
       issue:      #56
+      pr:         #128
 
 - [ ] E0-T04 Measure theme tokens at high DPI
       why:        A token set that fails contrast or blurs at 150% is not a theme.
