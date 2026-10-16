@@ -10,7 +10,7 @@ One task per run. Every task passes these states in order. Do not skip or reorde
 | 3 | IMPLEMENT | Smallest change that meets the task's acceptance criteria. Tests first where practical. | acceptance tests pass locally |
 | 4 | VERIFY | `mvn -B -ntp verify`; run the task's benchmark if it has one; self-review per REVIEW.md. | all green, self-review clean |
 | 5 | COMMIT | Atomic Conventional Commits per COMMITS.md. | history is clean and buildable per commit |
-| 6 | PR | Draft PR per PULL_REQUESTS.md, mark ready when CI is green on all 3 OS. | PR ready |
+| 6 | PR | Draft PR per PULL_REQUESTS.md, mark ready when PR CI is green (Ubuntu by default; `ci-full` for 3-OS). | PR ready |
 | 7 | REVIEW LOOP | Answer every comment; push follow-up commits. | owner approves |
 | 8 | MERGE | Owner squash-merges. Agents never merge. | merged |
 | 9 | CLOSE-OUT | Confirm the issue closed; file follow-ups as new `agent-task` issues. | nothing left dangling |
@@ -22,7 +22,7 @@ If blocked by an ambiguity, a pending ADR, or an "ask first" item:
 
 ## Definition of done
 - Acceptance criteria in the issue are all demonstrably true (state how in the PR).
-- `mvn -B -ntp verify` green on Linux, Windows, macOS CI.
+- `mvn -B -ntp verify` green locally. PR CI green (Ubuntu default). 3-OS CI when the PR has `ci-full` or after merge to `feat/ccmm-ide` / `main`.
 - Tests cover new behaviour; benchmarks recorded if perf-relevant.
 - docs/PLAN.md task ticked with the PR linked; ADR/docs updated if a decision changed.
 - No TODO/FIXME without an issue number.

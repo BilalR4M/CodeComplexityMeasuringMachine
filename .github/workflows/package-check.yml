@@ -5,8 +5,8 @@ on:
   pull_request:
     paths:
       - "scripts/**"
-      - "ccmm-app/**"
       - "pom.xml"
+      - "ccmm-app/pom.xml"
       - ".github/workflows/package.yml"
       - ".github/workflows/package-check.yml"
 permissions:

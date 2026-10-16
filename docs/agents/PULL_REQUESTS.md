@@ -1,7 +1,8 @@
 # Pull requests
 
 ## Opening
-- One task per PR, base `feat/ccmm-ide` (until v1). Open as **draft** early (`gh pr create --draft --base feat/ccmm-ide`), mark ready only after VERIFY passes and CI is green on Linux, Windows and macOS.
+- One task per PR, base `feat/ccmm-ide` (until v1). Open as **draft** early (`gh pr create --draft --base feat/ccmm-ide`), mark ready after VERIFY passes locally and the PR CI job is green.
+- Ordinary PRs run **Ubuntu-only** CI. Add the `ci-full` label for the 3-OS matrix (protocol, server, CLI, release-adjacent, or other major changes). Full 3-OS also runs on push to `feat/ccmm-ide` and `main`.
 - **Title = a Conventional Commit** (`feat(core): …`). It becomes the squash commit and the release note; `pr-title` CI enforces it.
 - Body follows `.github/PULL_REQUEST_TEMPLATE.md`: Summary · Task (plan ID, `Closes #n`) · Changes · Verification · Risk/rollback · Checklist.
 - Verification is evidence, not claims: commands run, results, benchmark numbers vs budget, screenshots for UI.
