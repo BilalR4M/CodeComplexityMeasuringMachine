@@ -16,3 +16,6 @@ Go means the existing `IdeWindowTest` methods execute (not skip) on all three CI
 
 ## Consequences
 New UI tests follow the harness this ADR accepts. They do not call `assumeFalse(isHeadless())` once the harness exists. Screenshot evidence in the PR is in addition to the test, not a substitute.
+
+## Measured result (E0-T05, 2026-10-16)
+`docs/benchmarks/ui-tests.md` ends with **go**. Xvfb (`xvfb-run -a`) makes all six `IdeWindowTest` methods run on `ubuntu-latest`; Windows and macOS already pass without it. Monocle was not required. This ADR stays **proposed**; `ci.yml` is not edited until acceptance.

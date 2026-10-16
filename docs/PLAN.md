@@ -455,7 +455,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #57
       pr:         #129
 
-- [ ] E0-T05 Prove headless UI tests on CI
+- [x] E0-T05 Prove headless UI tests on CI
       why:        IdeWindowTest skips when the JVM is headless, and Ubuntu CI has no display.
       scope:      spikes/e0-t05/ and docs/benchmarks/ui-tests.md
       depends on: none
@@ -464,6 +464,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       spike
       issue:      #58
+      pr:         pending
 
 #### E1 — workbench
 

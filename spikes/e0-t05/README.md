@@ -16,6 +16,10 @@ xvfb-run -a mvn -B -ntp -pl ccmm-app -am test -Dtest=IdeWindowTest -Dsurefire.fa
 
 Monocle was not required. TestFX was not added.
 
+## Proof
+
+Spike workflow run [38936761522](https://github.com/BilalR4M/CodeComplexityMeasuringMachine/actions/runs/38936761522): under `xvfb-run`, `IdeWindowTest` reported `Tests run: 6, Failures: 0, Errors: 0, Skipped: 0`.
+
 ## After ADR-0015 is accepted
 
 Change the Ubuntu `ci.yml` step from `mvn -B -ntp verify` to:
