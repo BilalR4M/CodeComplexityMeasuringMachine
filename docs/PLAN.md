@@ -431,7 +431,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       spike
       issue:      #55
-      pr:         pending
+      pr:         #127
 
 - [ ] E0-T03 Prove anchors survive operational transform
       why:        Comment threads have to move with the text or they point at the wrong lines.
