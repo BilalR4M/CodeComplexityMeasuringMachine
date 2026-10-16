@@ -49,7 +49,6 @@ public final class Workbench {
         activity.setPrefWidth(ACTIVITY_WIDTH);
         activity.setMinWidth(ACTIVITY_WIDTH);
         activity.setMaxWidth(ACTIVITY_WIDTH);
-        activity.getChildren().add(placeholder("Explorer"));
         side.setMinWidth(SIDE_MIN);
         inspector.setMinWidth(INSPECTOR_MIN);
         bottom.setMinHeight(BOTTOM_MIN);
@@ -251,10 +250,4 @@ public final class Workbench {
         return box;
     }
 
-    private static Label placeholder(String name) {
-        Label label = new Label(name);
-        label.setAccessibleText(name);
-        label.setRotate(-90);
-        return label;
-    }
 }
