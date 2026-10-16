@@ -1,5 +1,7 @@
 package dev.bilal.ccmm.app;
 
+import dev.bilal.ccmm.app.workbench.RegionId;
+import dev.bilal.ccmm.app.workbench.Workbench;
 import dev.bilal.ccmm.collab.protocol.Message;
 import dev.bilal.ccmm.core.AnalysisResult;
 import java.nio.file.Files;
@@ -8,13 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import org.fxmisc.richtext.CodeArea;
@@ -30,8 +32,8 @@ public final class IdeWindow {
     private final List<Message> remotePending = new ArrayList<>();
     private final MetricsPanel panel = new MetricsPanel();
     private final ProjectRoomPanel room = new ProjectRoomPanel();
-    private final BorderPane root = new BorderPane();
-    private final Scene scene = new Scene(root, 1100, 700);
+    private final Workbench workbench = new Workbench();
+    private final Scene scene = new Scene(workbench.root(), 1280, 800);
     private Runnable onListed = () -> {};
     private Runnable onOpened = () -> {};
     private Runnable onAnalyzed = () -> {};
@@ -64,10 +66,11 @@ public final class IdeWindow {
         MenuItem open = new MenuItem("Open Directory...");
         open.setOnAction(event -> chooseDirectory());
         Menu file = new Menu("File", null, open);
-        root.setTop(new MenuBar(file));
-        root.setLeft(tree);
-        root.setCenter(editor);
-        root.setRight(new VBox(panel, room));
+        workbench.setMenuBar(new MenuBar(file));
+        workbench.setContent(RegionId.SIDE, tree);
+        workbench.setContent(RegionId.EDITOR, editor);
+        workbench.setContent(RegionId.INSPECTOR, new VBox(panel, room));
+        workbench.setContent(RegionId.BOTTOM, new Label("Problems"));
         editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
         editor.caretPositionProperty().addListener((obs, previous, current) -> panel.caretMoved(caretLine()));
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
@@ -75,6 +78,10 @@ public final class IdeWindow {
 
     public Scene scene() {
         return scene;
+    }
+
+    public Workbench workbench() {
+        return workbench;
     }
 
     public TreeItem<FileNode> listedRoot() {
@@ -115,12 +122,15 @@ public final class IdeWindow {
 
     public void open(Path directory) {
         if (directory == null || !Files.isDirectory(directory)) {
+            workbench.setStatus("Could not open folder");
             return;
         }
+        workbench.setStatus("Opening…");
         projectRoot = directory;
         files.open(directory, node -> Platform.runLater(() -> {
             tree.setRoot(item(node));
             tree.getRoot().setExpanded(true);
+            workbench.setStatus("");
             onListed.run();
         }));
     }
