@@ -477,7 +477,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       ui
       issue:      #59
-      pr:         pending
+      pr:         #131
 
 - [ ] E1-T02 Add the activity bar
       why:        The side bar needs a way to switch views.
