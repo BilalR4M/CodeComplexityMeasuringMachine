@@ -99,8 +99,12 @@ public final class IdeWindow {
         workbench.setContent(RegionId.BOTTOM, bottomPanel);
         wireActivityShortcuts();
         editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
-        editor.caretPositionProperty().addListener((obs, previous, current) -> panel.caretMoved(caretLine()));
+        editor.caretPositionProperty().addListener((obs, previous, current) -> {
+            panel.caretMoved(caretLine());
+            updateCaretStatus();
+        });
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
+        updateCaretStatus();
     }
 
     public ActivityBar activityBar() {
@@ -214,6 +218,7 @@ public final class IdeWindow {
             }
             currentRelative = next;
             editor.replaceText(text);
+            updateCaretStatus();
             onOpened.run();
         }));
     }
@@ -268,6 +273,10 @@ public final class IdeWindow {
 
     private int caretLine() {
         return editor.getCurrentParagraph() + 1;
+    }
+
+    private void updateCaretStatus() {
+        workbench.statusBar().setCaret(caretLine(), editor.getCaretColumn() + 1);
     }
 
     private String relative(Path file) {
