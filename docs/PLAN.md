@@ -479,7 +479,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #59
       pr:         #131
 
-- [ ] E1-T02 Add the activity bar
+- [x] E1-T02 Add the activity bar
       why:        The side bar needs a way to switch views.
       scope:      ccmm-app workbench
       depends on: E1-T01
@@ -488,6 +488,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #60
+      pr:         #132
 
 - [ ] E1-T03 Add the side bar shell
       why:        Views need a title and a collapse control.

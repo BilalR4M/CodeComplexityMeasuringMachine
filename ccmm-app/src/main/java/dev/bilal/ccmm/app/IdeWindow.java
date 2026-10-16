@@ -1,6 +1,9 @@
 package dev.bilal.ccmm.app;
 
+import dev.bilal.ccmm.app.workbench.ActivityBar;
+import dev.bilal.ccmm.app.workbench.ActivityView;
 import dev.bilal.ccmm.app.workbench.RegionId;
+import dev.bilal.ccmm.app.workbench.SideViews;
 import dev.bilal.ccmm.app.workbench.Workbench;
 import dev.bilal.ccmm.collab.protocol.Message;
 import dev.bilal.ccmm.core.AnalysisResult;
@@ -17,6 +20,9 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import org.fxmisc.richtext.CodeArea;
@@ -33,6 +39,8 @@ public final class IdeWindow {
     private final MetricsPanel panel = new MetricsPanel();
     private final ProjectRoomPanel room = new ProjectRoomPanel();
     private final Workbench workbench = new Workbench();
+    private final ActivityBar activityBar = new ActivityBar();
+    private final SideViews sideViews = new SideViews();
     private final Scene scene = new Scene(workbench.root(), 1280, 800);
     private Runnable onListed = () -> {};
     private Runnable onOpened = () -> {};
@@ -67,13 +75,33 @@ public final class IdeWindow {
         open.setOnAction(event -> chooseDirectory());
         Menu file = new Menu("File", null, open);
         workbench.setMenuBar(new MenuBar(file));
-        workbench.setContent(RegionId.SIDE, tree);
+        sideViews.setExplorer(tree);
+        sideViews.show(ActivityView.EXPLORER);
+        activityBar.setOnSelect(view -> {
+            sideViews.show(view);
+            workbench.setContent(RegionId.SIDE, sideViews.host());
+            if (!workbench.isShowing(RegionId.SIDE)) {
+                workbench.show(RegionId.SIDE, true);
+                activityBar.setEnabled(true);
+            }
+        });
+        workbench.setContent(RegionId.ACTIVITY, activityBar);
+        workbench.setContent(RegionId.SIDE, sideViews.host());
         workbench.setContent(RegionId.EDITOR, editor);
         workbench.setContent(RegionId.INSPECTOR, new VBox(panel, room));
         workbench.setContent(RegionId.BOTTOM, new Label("Problems"));
+        wireActivityShortcuts();
         editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
         editor.caretPositionProperty().addListener((obs, previous, current) -> panel.caretMoved(caretLine()));
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
+    }
+
+    public ActivityBar activityBar() {
+        return activityBar;
+    }
+
+    public SideViews sideViews() {
+        return sideViews;
     }
 
     public Scene scene() {
@@ -127,10 +155,14 @@ public final class IdeWindow {
         }
         workbench.setStatus("Opening…");
         projectRoot = directory;
+        sideViews.setFolderName(directory.getFileName() == null ? directory.toString() : directory.getFileName().toString());
         files.open(directory, node -> Platform.runLater(() -> {
             tree.setRoot(item(node));
             tree.getRoot().setExpanded(true);
             workbench.setStatus("");
+            if (activityBar.selected() == ActivityView.SEARCH) {
+                sideViews.show(ActivityView.SEARCH);
+            }
             onListed.run();
         }));
     }
@@ -236,6 +268,27 @@ public final class IdeWindow {
         if (selected != null) {
             open(selected.toPath());
         }
+    }
+
+    /** Temporary accelerators. E1-T07 moves them into the keymap and deletes these. */
+    private void wireActivityShortcuts() {
+        scene.getAccelerators()
+                .put(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN),
+                        () -> activityBar.select(ActivityView.EXPLORER));
+        scene.getAccelerators()
+                .put(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN),
+                        () -> activityBar.select(ActivityView.SEARCH));
+        scene.getAccelerators()
+                .put(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN),
+                        () -> activityBar.select(ActivityView.OUTLINE));
+        scene.getAccelerators()
+                .put(new KeyCodeCombination(KeyCode.COMMA, KeyCombination.CONTROL_DOWN),
+                        () -> activityBar.select(ActivityView.SETTINGS));
+        scene.getAccelerators().put(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN), () -> {
+            boolean show = !workbench.isShowing(RegionId.SIDE);
+            workbench.show(RegionId.SIDE, show);
+            activityBar.setEnabled(show);
+        });
     }
 
     private static TreeItem<FileNode> item(FileNode node) {
