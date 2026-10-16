@@ -15,3 +15,6 @@ A no-go is a contrast or HiDPI failure of the token values. The fix is a token c
 
 ## Consequences
 UI issues reference token names. Raw hex in `ccmm-app` is a review failure. JavaFX regular and bold weights are the only weights in the spec.
+
+## Measured result (E0-T04, 2026-10-16)
+`docs/benchmarks/hidpi.md` ends with **go**. Primary and secondary text ratios match TOKENS.md; 24 px tree rows were not clipped at 100/150/200% on Windows for dark and light. AtlantaFX was not added. This ADR stays **proposed**.

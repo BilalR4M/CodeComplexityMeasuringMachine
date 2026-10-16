@@ -1,0 +1,59 @@
+/* Token names from docs/design/TOKENS.md. Light theme. */
+.root {
+  -fx-ccmm-surface-0: #FFFFFF;
+  -fx-ccmm-text-primary: #1E1E1E;
+  -fx-ccmm-text-secondary: #4A4A4A;
+  -fx-ccmm-success: #0F7B3A;
+  -fx-ccmm-warn: #8A5A00;
+  -fx-ccmm-danger: #B42318;
+  -fx-ccmm-remote-1: #0072B2;
+  -fx-ccmm-text-on-remote-light: #FFFFFF;
+  -fx-background-color: -fx-ccmm-surface-0;
+}
+
+.panel {
+  -fx-background-color: -fx-ccmm-surface-0;
+  -fx-padding: 16;
+  -fx-spacing: 8;
+}
+
+.text-primary {
+  -fx-text-fill: -fx-ccmm-text-primary;
+  -fx-font-size: 12px;
+}
+
+.text-secondary {
+  -fx-text-fill: -fx-ccmm-text-secondary;
+  -fx-font-size: 12px;
+}
+
+.band-success {
+  -fx-text-fill: -fx-ccmm-success;
+  -fx-font-size: 12px;
+}
+
+.band-warn {
+  -fx-text-fill: -fx-ccmm-warn;
+  -fx-font-size: 12px;
+}
+
+.band-danger {
+  -fx-text-fill: -fx-ccmm-danger;
+  -fx-font-size: 12px;
+}
+
+.tree-row {
+  -fx-pref-height: 24;
+  -fx-min-height: 24;
+  -fx-max-height: 24;
+  -fx-alignment: CENTER_LEFT;
+  -fx-spacing: 8;
+}
+
+.remote-chip {
+  -fx-background-color: -fx-ccmm-remote-1;
+  -fx-text-fill: -fx-ccmm-text-on-remote-light;
+  -fx-padding: 2 6 2 6;
+  -fx-background-radius: 4;
+  -fx-font-size: 12px;
+}
