@@ -1,5 +1,7 @@
 package dev.bilal.ccmm.app;
 
+import dev.bilal.ccmm.app.document.Document;
+import dev.bilal.ccmm.app.document.EditOrigin;
 import dev.bilal.ccmm.app.settings.ConfirmPrompt;
 import dev.bilal.ccmm.app.settings.Settings;
 import dev.bilal.ccmm.app.settings.SettingsPanel;
@@ -59,11 +61,12 @@ public final class IdeWindow {
     private Runnable onOpened = () -> {};
     private Runnable onAnalyzed = () -> {};
     private Path projectRoot;
-    private String currentRelative;
+    private Document document;
     private AnalysisResult latest;
     private AnalysisResult.Ok lastGood;
     private int openGeneration;
     private boolean remoteFlushScheduled;
+    private boolean syncingEditor;
 
     public IdeWindow() {
         this(AnalysisScheduler.QUIET_MILLIS, DirectoryPrompt.chooser(), new SettingsStore(SettingsStore.defaultDirectory()));
@@ -123,13 +126,20 @@ public final class IdeWindow {
         workbench.setContent(RegionId.INSPECTOR, new VBox(panel, room));
         workbench.setContent(RegionId.BOTTOM, bottomPanel);
         keymap.install(scene, workbench);
-        editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
+        editor.textProperty().addListener((obs, previous, text) -> {
+            syncDocumentFromEditor(text);
+            scheduleAnalysis(text);
+        });
         editor.caretPositionProperty().addListener((obs, previous, current) -> {
             panel.caretMoved(caretLine());
             updateCaretStatus();
         });
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
         updateCaretStatus();
+    }
+
+    Document document() {
+        return document;
     }
 
     public ActivityBar activityBar() {
@@ -240,7 +250,12 @@ public final class IdeWindow {
     }
 
     private void openFile(Path file) {
-        if (file == null || !file.getFileName().toString().endsWith(".java")) {
+        if (file == null || projectRoot == null) {
+            return;
+        }
+        String next = relative(file);
+        if (!Document.isJavaPath(next)) {
+            workbench.setStatus(Document.ONLY_JAVA_MESSAGE);
             return;
         }
         int ticket = ++openGeneration;
@@ -248,13 +263,18 @@ public final class IdeWindow {
             if (ticket != openGeneration || text == null) {
                 return;
             }
-            String next = relative(file);
-            if (currentRelative == null || !currentRelative.equals(next)) {
+            if (document == null || !document.relativePath().equals(next)) {
                 lastGood = null;
                 panel.showUnparsed("");
             }
-            currentRelative = next;
-            editor.replaceText(text);
+            document = new Document(next, text);
+            syncingEditor = true;
+            try {
+                editor.replaceText(text);
+            } finally {
+                syncingEditor = false;
+            }
+            workbench.setStatus("");
             updateCaretStatus();
             onOpened.run();
         }));
@@ -273,14 +293,37 @@ public final class IdeWindow {
         remotePending.clear();
         remoteFlushScheduled = false;
         room.acceptAll(batch);
-        RemoteEdits.apply(editor, localUndo, RemoteEdits.accepted(projectRoot, currentRelative, batch));
+        String openPath = document == null ? null : document.relativePath();
+        List<dev.bilal.ccmm.collab.protocol.TextOp> ops = RemoteEdits.accepted(projectRoot, openPath, batch);
+        syncingEditor = true;
+        try {
+            RemoteEdits.apply(document, editor, localUndo, ops);
+        } catch (IllegalArgumentException failure) {
+            workbench.setStatus(failure.getMessage());
+        } finally {
+            syncingEditor = false;
+        }
+    }
+
+    private void syncDocumentFromEditor(String text) {
+        if (syncingEditor || document == null || text == null) {
+            return;
+        }
+        if (text.equals(document.text())) {
+            return;
+        }
+        try {
+            document.replace(0, document.text().length(), text, EditOrigin.LOCAL);
+        } catch (IllegalArgumentException failure) {
+            workbench.setStatus(failure.getMessage());
+        }
     }
 
     private void scheduleAnalysis(String text) {
-        if (currentRelative == null || text == null) {
+        if (document == null || text == null || !Document.isJavaPath(document.relativePath())) {
             return;
         }
-        analysis.schedule(text, currentRelative, this::publish);
+        analysis.schedule(text, document.relativePath(), this::publish);
     }
 
     private void publish(AnalysisResult result) {
@@ -289,7 +332,7 @@ public final class IdeWindow {
             case AnalysisResult.Ok ok -> ok.relativePath();
             case AnalysisResult.Failed failed -> failed.relativePath();
         };
-        if (currentRelative != null && currentRelative.equals(path)) {
+        if (document != null && document.relativePath().equals(path)) {
             switch (result) {
                 case AnalysisResult.Ok ok -> {
                     lastGood = ok;

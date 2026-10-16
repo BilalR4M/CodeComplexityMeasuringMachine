@@ -87,17 +87,31 @@ class RemoteEditsTest {
                         Platform.runLater(() -> {
                             try {
                                 assertEquals("XabYZ", window.editor().getText());
+                                assertTrue(window.document().dirty());
                                 assertEquals(1, batches.get());
                                 assertTrue(window.editor().getUndoManager().undo());
                                 assertEquals("abYZ", window.editor().getText());
+                                assertTrue(window.document().dirty());
                                 assertFalse(window.editor().getUndoManager().isUndoAvailable());
-                                stage.close();
-                                window.close();
+                                window.applyRemote(List.of(new Message.Delete("A.java", 2, 2, 0, "bob")));
                             } catch (Throwable thrown) {
                                 failure.set(thrown);
-                            } finally {
                                 done.countDown();
+                                return;
                             }
+                            Platform.runLater(() -> {
+                                try {
+                                    assertEquals("ab", window.editor().getText());
+                                    assertFalse(window.document().dirty());
+                                    assertFalse(window.editor().getUndoManager().isUndoAvailable());
+                                    stage.close();
+                                    window.close();
+                                } catch (Throwable thrown) {
+                                    failure.set(thrown);
+                                } finally {
+                                    done.countDown();
+                                }
+                            });
                         });
                     } catch (Throwable thrown) {
                         failure.set(thrown);

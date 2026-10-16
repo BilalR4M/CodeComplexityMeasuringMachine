@@ -579,7 +579,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
 
 #### E2 — editor
 
-- [ ] E2-T01 Add a document model
+- [x] E2-T01 Add a document model
       why:        The editor state lives in IdeWindow fields, so tabs and remote edits have nowhere to sit.
       scope:      ccmm-app document
       depends on: none
@@ -588,6 +588,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       code
       issue:      #69
+      pr:         #141
 
 - [ ] E2-T02 Add a tab strip
       why:        One buffer cannot show the files a review touches.
