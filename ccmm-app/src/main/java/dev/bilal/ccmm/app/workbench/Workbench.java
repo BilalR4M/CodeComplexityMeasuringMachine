@@ -2,6 +2,7 @@ package dev.bilal.ccmm.app.workbench;
 
 import java.util.EnumMap;
 import java.util.Map;
+import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -37,6 +38,7 @@ public final class Workbench {
     private final SplitPane vertical = new SplitPane();
     private final SplitPane horizontal = new SplitPane();
     private final BorderPane center = new BorderPane();
+    private final CommandRegistry commands = new CommandRegistry();
     private final Map<RegionId, Boolean> visible = new EnumMap<>(RegionId.class);
     private double sideWidth = SIDE_DEFAULT;
     private double inspectorWidth = INSPECTOR_DEFAULT;
@@ -93,6 +95,37 @@ public final class Workbench {
 
     public void setMenuBar(Node menuBar) {
         root.setTop(menuBar);
+    }
+
+    public CommandRegistry commands() {
+        return commands;
+    }
+
+    public void register(Command command) {
+        commands.register(command);
+    }
+
+    /**
+     * Looks up and runs a command on the FX thread. Failures set the status bar;
+     * they are not thrown into the scene.
+     */
+    public void execute(String commandId) {
+        Runnable run = () -> {
+            try {
+                Command command = commands
+                        .find(commandId)
+                        .orElseThrow(() -> new IllegalArgumentException("unknown command: " + commandId));
+                command.run(this);
+            } catch (RuntimeException failure) {
+                String message = failure.getMessage();
+                setStatus(message == null || message.isBlank() ? failure.getClass().getSimpleName() : message);
+            }
+        };
+        if (Platform.isFxApplicationThread()) {
+            run.run();
+        } else {
+            Platform.runLater(run);
+        }
     }
 
     public void setContent(RegionId region, Node content) {

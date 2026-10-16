@@ -523,7 +523,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #63
       pr:         #136
 
-- [ ] E1-T06 Add a command registry
+- [x] E1-T06 Add a command registry
       why:        The palette and the menu must run the same commands.
       scope:      ccmm-app workbench
       depends on: E1-T01
@@ -532,6 +532,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #64
+      pr:         #137
 
 - [ ] E1-T07 Add a keymap
       why:        Shortcuts must be one table, with Ctrl on Windows and Linux and Cmd on macOS.

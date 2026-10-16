@@ -3,6 +3,9 @@ package dev.bilal.ccmm.app;
 import dev.bilal.ccmm.app.workbench.ActivityBar;
 import dev.bilal.ccmm.app.workbench.ActivityView;
 import dev.bilal.ccmm.app.workbench.BottomPanel;
+import dev.bilal.ccmm.app.workbench.CommandId;
+import dev.bilal.ccmm.app.workbench.DirectoryPrompt;
+import dev.bilal.ccmm.app.workbench.OpenFolderCommand;
 import dev.bilal.ccmm.app.workbench.RegionId;
 import dev.bilal.ccmm.app.workbench.SideBar;
 import dev.bilal.ccmm.app.workbench.SideViews;
@@ -25,7 +28,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
-import javafx.stage.DirectoryChooser;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.util.UndoUtils;
 import org.reactfx.SuspendableYes;
@@ -56,10 +58,14 @@ public final class IdeWindow {
     private boolean remoteFlushScheduled;
 
     public IdeWindow() {
-        this(AnalysisScheduler.QUIET_MILLIS);
+        this(AnalysisScheduler.QUIET_MILLIS, DirectoryPrompt.chooser());
     }
 
     IdeWindow(long analysisDelayMs) {
+        this(analysisDelayMs, DirectoryPrompt.chooser());
+    }
+
+    IdeWindow(long analysisDelayMs, DirectoryPrompt directoryPrompt) {
         analysis = new AnalysisScheduler(analysisDelayMs, Platform::runLater);
         tree.setShowRoot(true);
         tree.setCellFactory(view -> new TreeCell<>() {
@@ -74,8 +80,9 @@ public final class IdeWindow {
                 openFile(item.getValue().path());
             }
         });
-        MenuItem open = new MenuItem("Open Directory...");
-        open.setOnAction(event -> chooseDirectory());
+        workbench.register(new OpenFolderCommand(directoryPrompt, this::open, () -> scene.getWindow()));
+        MenuItem open = new MenuItem("Open Folder…");
+        open.setOnAction(event -> workbench.execute(CommandId.FILE_OPEN.value()));
         Menu file = new Menu("File", null, open);
         workbench.setMenuBar(new MenuBar(file));
         sideViews.setExplorer(tree);
@@ -283,15 +290,6 @@ public final class IdeWindow {
         Path root = projectRoot.toAbsolutePath().normalize();
         Path target = file.toAbsolutePath().normalize();
         return root.relativize(target).toString().replace('\\', '/');
-    }
-
-    private void chooseDirectory() {
-        DirectoryChooser chooser = new DirectoryChooser();
-        chooser.setTitle("Open project");
-        var selected = chooser.showDialog(tree.getScene() == null ? null : tree.getScene().getWindow());
-        if (selected != null) {
-            open(selected.toPath());
-        }
     }
 
     /** Temporary accelerators. E1-T07 moves them into the keymap and deletes these. */
