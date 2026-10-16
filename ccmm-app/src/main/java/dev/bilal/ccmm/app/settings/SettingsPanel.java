@@ -1,6 +1,7 @@
 package dev.bilal.ccmm.app.settings;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -19,6 +20,7 @@ public final class SettingsPanel {
 
     private final SettingsStore store;
     private final ConfirmPrompt confirm;
+    private Consumer<Settings.Theme> onThemeChanged = theme -> {};
     private final VBox root = new VBox(8);
     private final ComboBox<String> theme = new ComboBox<>();
     private final Spinner<Integer> fontSize =
@@ -72,7 +74,9 @@ public final class SettingsPanel {
         root.getChildren().addAll(grid, reset);
         theme.valueProperty().addListener((obs, previous, value) -> {
             if (!syncing && value != null) {
-                store.setTheme("Light".equals(value) ? Settings.Theme.LIGHT : Settings.Theme.DARK);
+                Settings.Theme next = "Light".equals(value) ? Settings.Theme.LIGHT : Settings.Theme.DARK;
+                store.setTheme(next);
+                onThemeChanged.accept(next);
             }
         });
         fontSize.valueProperty().addListener((obs, previous, value) -> {
@@ -105,9 +109,14 @@ public final class SettingsPanel {
             if (confirm.confirm(RESET_PROMPT, root.getScene() == null ? null : root.getScene().getWindow())) {
                 store.resetToDefaults();
                 syncFromStore();
+                onThemeChanged.accept(store.current().theme());
             }
         });
         syncFromStore();
+    }
+
+    public void setOnThemeChanged(Consumer<Settings.Theme> onThemeChanged) {
+        this.onThemeChanged = Objects.requireNonNull(onThemeChanged);
     }
 
     public Node root() {

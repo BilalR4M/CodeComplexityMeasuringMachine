@@ -1,6 +1,7 @@
 package dev.bilal.ccmm.app;
 
 import dev.bilal.ccmm.app.settings.ConfirmPrompt;
+import dev.bilal.ccmm.app.settings.Settings;
 import dev.bilal.ccmm.app.settings.SettingsPanel;
 import dev.bilal.ccmm.app.settings.SettingsStore;
 import dev.bilal.ccmm.app.workbench.ActivityBar;
@@ -14,6 +15,7 @@ import dev.bilal.ccmm.app.workbench.RegionId;
 import dev.bilal.ccmm.app.workbench.SideBar;
 import dev.bilal.ccmm.app.workbench.SideViews;
 import dev.bilal.ccmm.app.workbench.SimpleCommand;
+import dev.bilal.ccmm.app.workbench.Theme;
 import dev.bilal.ccmm.app.workbench.Workbench;
 import dev.bilal.ccmm.collab.protocol.Message;
 import dev.bilal.ccmm.core.AnalysisResult;
@@ -78,7 +80,9 @@ public final class IdeWindow {
     IdeWindow(long analysisDelayMs, DirectoryPrompt directoryPrompt, SettingsStore settingsStore) {
         this.settingsStore = Objects.requireNonNull(settingsStore);
         this.settingsPanel = new SettingsPanel(settingsStore, ConfirmPrompt.dialog());
+        this.settingsPanel.setOnThemeChanged(this::applySettingsTheme);
         analysis = new AnalysisScheduler(analysisDelayMs, Platform::runLater);
+        applySettingsTheme(settingsStore.current().theme());
         tree.setShowRoot(true);
         tree.setCellFactory(view -> new TreeCell<>() {
             @Override
@@ -340,6 +344,10 @@ public final class IdeWindow {
 
     private void toggleBottomPanel() {
         workbench.show(RegionId.BOTTOM, !workbench.isShowing(RegionId.BOTTOM));
+    }
+
+    private void applySettingsTheme(Settings.Theme settingsTheme) {
+        workbench.applyTheme(settingsTheme == Settings.Theme.LIGHT ? Theme.LIGHT : Theme.DARK);
     }
 
     private static TreeItem<FileNode> item(FileNode node) {

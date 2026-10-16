@@ -44,6 +44,7 @@ Accepted and unchanged:
 - [ADR-0005](adr/0005-relay-hosting.md) operator-run image, accepted.
 - [ADR-0006](adr/0006-room-auth.md) invite token, accepted.
 - [ADR-0007](adr/0007-cognitive-complexity.md) post-v1, accepted.
+- [ADR-0013](adr/0013-theming.md) token stylesheets (no AtlantaFX), accepted.
 
 Proposed for the UX program. None of these are accepted. Implementation issues that name one of them stay blocked until the owner accepts it.
 
@@ -52,7 +53,6 @@ Proposed for the UX program. None of these are accepted. Implementation issues t
 - [ADR-0010](adr/0010-language-scope.md) language scope. Recommends opening any text file and keeping Java-only metrics. This asks the owner to change the locked "Java-only language support" line. No language server.
 - [ADR-0011](adr/0011-collaboration-ownership.md) local checkouts plus a hash handshake. The file tree stays unsynced.
 - [ADR-0012](adr/0012-jdk-javafx-version.md) stay on Java 21 and JavaFX 21.0.5.
-- [ADR-0013](adr/0013-theming.md) token stylesheets. Current AtlantaFX needs a newer JDK, so it is not adopted.
 - [ADR-0014](adr/0014-icons-and-font.md) JetBrains Mono (OFL) and Lucide, including the Feather MIT notice.
 - [ADR-0015](adr/0015-ui-test-strategy.md) headless UI tests on CI. The workflow is not edited in this plan.
 
@@ -545,7 +545,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #65
       pr:         #138
 
-- [ ] E1-T08 Apply theme tokens
+- [x] E1-T08 Apply theme tokens
       why:        The window is still Modena.
       scope:      ccmm-app stylesheets
       depends on: E0-T04, ADR-0013 accepted, ADR-0014 accepted for the font
@@ -554,6 +554,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #66
+      pr:         #140
 
 - [x] E1-T09 Add a settings store
       why:        Theme, font size, relay URL, and display name have to survive a restart.

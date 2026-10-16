@@ -2,6 +2,7 @@ package dev.bilal.ccmm.app.workbench;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
@@ -43,11 +44,13 @@ public final class Workbench {
     private double sideWidth = SIDE_DEFAULT;
     private double inspectorWidth = INSPECTOR_DEFAULT;
     private double bottomHeight = BOTTOM_DEFAULT;
+    private Theme theme = Theme.DARK;
 
     public Workbench() {
         for (RegionId id : RegionId.values()) {
             visible.put(id, true);
         }
+        applyTheme(Theme.DARK);
         activity.setPrefWidth(ACTIVITY_WIDTH);
         activity.setMinWidth(ACTIVITY_WIDTH);
         activity.setMaxWidth(ACTIVITY_WIDTH);
@@ -79,6 +82,27 @@ public final class Workbench {
 
     public BorderPane root() {
         return root;
+    }
+
+    public Theme theme() {
+        return theme;
+    }
+
+    /**
+     * Swaps the token stylesheet and root style class. Hex lives only in CSS
+     * ({@code /theme/dark.css}, {@code /theme/light.css}).
+     */
+    public void applyTheme(Theme theme) {
+        this.theme = Objects.requireNonNull(theme);
+        root.getStyleClass().removeAll(Theme.DARK.styleClass(), Theme.LIGHT.styleClass());
+        root.getStyleClass().add(theme.styleClass());
+        root.getStylesheets()
+                .removeIf(sheet -> sheet.contains("/theme/dark.css") || sheet.contains("/theme/light.css"));
+        var url = Workbench.class.getResource(theme.stylesheetResource());
+        if (url == null) {
+            throw new IllegalStateException("missing stylesheet: " + theme.stylesheetResource());
+        }
+        root.getStylesheets().add(url.toExternalForm());
     }
 
     public StatusBar statusBar() {

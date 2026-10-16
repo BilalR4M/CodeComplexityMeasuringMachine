@@ -1,0 +1,105 @@
+/* Token names from docs/design/TOKENS.md. Light theme. Hex only here — never in Java. */
+.root {
+    -fx-ccmm-surface-0: #FFFFFF;
+    -fx-ccmm-surface-1: #F3F3F3;
+    -fx-ccmm-surface-2: #E8E8E8;
+    -fx-ccmm-surface-3: #DCDCDC;
+    -fx-ccmm-text-primary: #1E1E1E;
+    -fx-ccmm-text-secondary: #4A4A4A;
+    -fx-ccmm-text-disabled: #767676;
+    -fx-ccmm-accent: #005A9E;
+    -fx-ccmm-success: #0F7B3A;
+    -fx-ccmm-warn: #8A5A00;
+    -fx-ccmm-danger: #B42318;
+    -fx-ccmm-selection: #C7E0F4;
+    -fx-ccmm-diff-add: #D8F3DC;
+    -fx-ccmm-diff-remove: #F8D7DA;
+    -fx-ccmm-text-on-remote-light: #FFFFFF;
+    -fx-ccmm-text-on-remote-dark: #1A1A1A;
+    -fx-ccmm-remote-1: #0072B2;
+    -fx-ccmm-remote-2: #D55E00;
+    -fx-ccmm-remote-3: #009E73;
+    -fx-ccmm-remote-4: #CC79A7;
+    -fx-ccmm-remote-5: #999933;
+    -fx-ccmm-remote-6: #CC6677;
+    -fx-ccmm-remote-7: #2E7D4F;
+    -fx-ccmm-remote-8: #4E6E8A;
+    -fx-background-color: -fx-ccmm-surface-0;
+    -fx-font-size: 12px;
+}
+
+#activity,
+#activity-bar {
+    -fx-background-color: -fx-ccmm-surface-1;
+}
+
+#region-side,
+#side-bar,
+#side-views {
+    -fx-background-color: -fx-ccmm-surface-1;
+}
+
+#region-editor,
+.styled-text-area,
+.code-area {
+    -fx-background-color: -fx-ccmm-surface-0;
+    /* Platform monospace until ADR-0014 accepts JetBrains Mono. */
+    -fx-font-family: monospace;
+    -fx-font-size: 13px;
+}
+
+#region-inspector,
+#region-bottom,
+#bottom-panel,
+#status-bar {
+    -fx-background-color: -fx-ccmm-surface-2;
+}
+
+.label,
+.text,
+.tree-cell,
+.tab,
+.button,
+.toggle-button,
+.combo-box,
+.spinner,
+.text-field,
+.menu-bar,
+.menu,
+.menu-item {
+    -fx-text-fill: -fx-ccmm-text-primary;
+}
+
+.text-secondary {
+    -fx-text-fill: -fx-ccmm-text-secondary;
+}
+
+.band-success {
+    -fx-text-fill: -fx-ccmm-success;
+}
+
+.band-warn {
+    -fx-text-fill: -fx-ccmm-warn;
+}
+
+.band-danger {
+    -fx-text-fill: -fx-ccmm-danger;
+}
+
+.tree-cell {
+    -fx-pref-height: 24;
+    -fx-min-height: 24;
+}
+
+.toggle-button:selected {
+    -fx-background-color: -fx-ccmm-surface-3;
+}
+
+.remote-chip-1 { -fx-background-color: -fx-ccmm-remote-1; -fx-text-fill: -fx-ccmm-text-on-remote-light; }
+.remote-chip-2 { -fx-background-color: -fx-ccmm-remote-2; -fx-text-fill: -fx-ccmm-text-on-remote-dark; }
+.remote-chip-3 { -fx-background-color: -fx-ccmm-remote-3; -fx-text-fill: -fx-ccmm-text-on-remote-dark; }
+.remote-chip-4 { -fx-background-color: -fx-ccmm-remote-4; -fx-text-fill: -fx-ccmm-text-on-remote-dark; }
+.remote-chip-5 { -fx-background-color: -fx-ccmm-remote-5; -fx-text-fill: -fx-ccmm-text-on-remote-dark; }
+.remote-chip-6 { -fx-background-color: -fx-ccmm-remote-6; -fx-text-fill: -fx-ccmm-text-on-remote-dark; }
+.remote-chip-7 { -fx-background-color: -fx-ccmm-remote-7; -fx-text-fill: -fx-ccmm-text-on-remote-light; }
+.remote-chip-8 { -fx-background-color: -fx-ccmm-remote-8; -fx-text-fill: -fx-ccmm-text-on-remote-light; }
