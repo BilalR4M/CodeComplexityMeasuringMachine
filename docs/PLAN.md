@@ -564,7 +564,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #67
-      pr:         pending
+      pr:         #139
 
 - [ ] E1-T10 Restore the session
       why:        Reopening the IDE should bring back the folder and the open files.
