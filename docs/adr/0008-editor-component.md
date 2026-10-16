@@ -18,3 +18,6 @@ A no-go names the replacement, blocks the E2 tasks that assume RichTextFX, and d
 
 ## Consequences
 E2 editor behaviour is specified against a decoration API in `docs/architecture.md`, not against RichTextFX types, so a no-go does not rewrite the UX. Spike code lives under `spikes/e0-t01/` and is not shipped.
+
+## Measured result (E0-T01, 2026-10-16)
+`docs/benchmarks/editor-bakeoff.md` ends with **go** for RichTextFX on JavaFX 21.0.5 (p95 well under 16 ms, 5 MB committed memory under 500 MB, gutter decoration yes, remote-style span without scroll yes). Folding is **no**. The incubating JavaFX `CodeArea` was not on the JavaFX 21 classpath and was not measured with a side toolchain; ADR-0012 still recommends staying on 21. This ADR stays **proposed** until the owner accepts it. ADR-0001 remains accepted.
