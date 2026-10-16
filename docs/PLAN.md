@@ -576,7 +576,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #68
-      pr:         pending
+      pr:         #142
 
 #### E2 — editor
 
