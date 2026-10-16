@@ -5,15 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.bilal.ccmm.app.workbench.BottomPanel;
+import dev.bilal.ccmm.app.workbench.CommandId;
 import dev.bilal.ccmm.app.workbench.RegionId;
 import java.awt.GraphicsEnvironment;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -40,12 +38,9 @@ class BottomPanelTest {
                 assertEquals(BottomPanel.PROBLEMS_EMPTY, window.bottomPanel().problemsText());
                 assertTrue(window.workbench().isShowing(RegionId.BOTTOM));
 
-                Runnable toggle = window.scene()
-                        .getAccelerators()
-                        .get(new KeyCodeCombination(KeyCode.J, KeyCombination.CONTROL_DOWN));
-                toggle.run();
+                window.workbench().execute(CommandId.VIEW_TOGGLE_BOTTOM.value());
                 assertFalse(window.workbench().isShowing(RegionId.BOTTOM));
-                toggle.run();
+                window.workbench().execute(CommandId.VIEW_TOGGLE_BOTTOM.value());
                 assertTrue(window.workbench().isShowing(RegionId.BOTTOM));
 
                 stage.close();
