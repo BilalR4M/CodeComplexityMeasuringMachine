@@ -488,7 +488,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #60
-      pr:         pending
+      pr:         #132
 
 - [ ] E1-T03 Add the side bar shell
       why:        Views need a title and a collapse control.
