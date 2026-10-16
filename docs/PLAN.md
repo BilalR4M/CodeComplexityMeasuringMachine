@@ -422,7 +422,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #54
       pr:         #126
 
-- [ ] E0-T02 Compare highlighting engines
+- [x] E0-T02 Compare highlighting engines
       why:        Highlighting can stall typing, and the engine is undecided.
       scope:      spikes/e0-t02/ and docs/benchmarks/highlighting.md
       depends on: none
@@ -431,6 +431,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       spike
       issue:      #55
+      pr:         pending
 
 - [ ] E0-T03 Prove anchors survive operational transform
       why:        Comment threads have to move with the text or they point at the wrong lines.
