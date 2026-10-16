@@ -464,7 +464,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       spike
       issue:      #58
-      pr:         pending
+      pr:         #130
 
 #### E1 — workbench
 
