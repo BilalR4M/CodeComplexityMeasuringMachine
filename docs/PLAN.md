@@ -588,7 +588,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       code
       issue:      #69
-      pr:         pending
+      pr:         #141
 
 - [ ] E2-T02 Add a tab strip
       why:        One buffer cannot show the files a review touches.
