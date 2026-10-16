@@ -543,7 +543,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #65
-      pr:         pending
+      pr:         #138
 
 - [ ] E1-T08 Apply theme tokens
       why:        The window is still Modena.
