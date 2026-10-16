@@ -420,7 +420,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       spike
       issue:      #54
-      pr:         pending
+      pr:         #126
 
 - [ ] E0-T02 Compare highlighting engines
       why:        Highlighting can stall typing, and the engine is undecided.
