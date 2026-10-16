@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.bilal.ccmm.app.workbench.ActivityView;
+import dev.bilal.ccmm.app.workbench.CommandId;
 import dev.bilal.ccmm.app.workbench.RegionId;
 import dev.bilal.ccmm.app.workbench.SideBar;
 import java.awt.GraphicsEnvironment;
@@ -12,9 +13,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -68,12 +66,9 @@ class SideBarTest {
                 window.activityBar().select(ActivityView.SEARCH);
                 assertEquals("Search", window.sideBar().titleText());
 
-                Runnable toggle = window.scene()
-                        .getAccelerators()
-                        .get(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN));
-                toggle.run();
+                window.workbench().execute(CommandId.VIEW_TOGGLE_SIDE.value());
                 assertFalse(window.workbench().isShowing(RegionId.SIDE));
-                toggle.run();
+                window.workbench().execute(CommandId.VIEW_TOGGLE_SIDE.value());
                 assertTrue(window.workbench().isShowing(RegionId.SIDE));
 
                 stage.close();

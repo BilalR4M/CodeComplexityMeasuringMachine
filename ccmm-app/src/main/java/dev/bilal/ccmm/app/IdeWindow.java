@@ -5,10 +5,12 @@ import dev.bilal.ccmm.app.workbench.ActivityView;
 import dev.bilal.ccmm.app.workbench.BottomPanel;
 import dev.bilal.ccmm.app.workbench.CommandId;
 import dev.bilal.ccmm.app.workbench.DirectoryPrompt;
+import dev.bilal.ccmm.app.workbench.Keymap;
 import dev.bilal.ccmm.app.workbench.OpenFolderCommand;
 import dev.bilal.ccmm.app.workbench.RegionId;
 import dev.bilal.ccmm.app.workbench.SideBar;
 import dev.bilal.ccmm.app.workbench.SideViews;
+import dev.bilal.ccmm.app.workbench.SimpleCommand;
 import dev.bilal.ccmm.app.workbench.Workbench;
 import dev.bilal.ccmm.collab.protocol.Message;
 import dev.bilal.ccmm.core.AnalysisResult;
@@ -24,9 +26,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.util.UndoUtils;
@@ -46,6 +45,7 @@ public final class IdeWindow {
     private final SideViews sideViews = new SideViews();
     private final SideBar sideBar = new SideBar();
     private final BottomPanel bottomPanel = new BottomPanel();
+    private final Keymap keymap = Keymap.seeded(Keymap.detectPlatform());
     private final Scene scene = new Scene(workbench.root(), 1280, 800);
     private Runnable onListed = () -> {};
     private Runnable onOpened = () -> {};
@@ -81,6 +81,7 @@ public final class IdeWindow {
             }
         });
         workbench.register(new OpenFolderCommand(directoryPrompt, this::open, () -> scene.getWindow()));
+        registerViewCommands();
         MenuItem open = new MenuItem("Open Folder…");
         open.setOnAction(event -> workbench.execute(CommandId.FILE_OPEN.value()));
         Menu file = new Menu("File", null, open);
@@ -104,7 +105,7 @@ public final class IdeWindow {
         workbench.setContent(RegionId.EDITOR, editor);
         workbench.setContent(RegionId.INSPECTOR, new VBox(panel, room));
         workbench.setContent(RegionId.BOTTOM, bottomPanel);
-        wireActivityShortcuts();
+        keymap.install(scene, workbench);
         editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
         editor.caretPositionProperty().addListener((obs, previous, current) -> {
             panel.caretMoved(caretLine());
@@ -128,6 +129,10 @@ public final class IdeWindow {
 
     public BottomPanel bottomPanel() {
         return bottomPanel;
+    }
+
+    public Keymap keymap() {
+        return keymap;
     }
 
     public Scene scene() {
@@ -292,24 +297,18 @@ public final class IdeWindow {
         return root.relativize(target).toString().replace('\\', '/');
     }
 
-    /** Temporary accelerators. E1-T07 moves them into the keymap and deletes these. */
-    private void wireActivityShortcuts() {
-        scene.getAccelerators()
-                .put(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN),
-                        () -> activityBar.select(ActivityView.EXPLORER));
-        scene.getAccelerators()
-                .put(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN),
-                        () -> activityBar.select(ActivityView.SEARCH));
-        scene.getAccelerators()
-                .put(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN),
-                        () -> activityBar.select(ActivityView.OUTLINE));
-        scene.getAccelerators()
-                .put(new KeyCodeCombination(KeyCode.COMMA, KeyCombination.CONTROL_DOWN),
-                        () -> activityBar.select(ActivityView.SETTINGS));
-        scene.getAccelerators()
-                .put(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN), this::toggleSideBar);
-        scene.getAccelerators()
-                .put(new KeyCodeCombination(KeyCode.J, KeyCombination.CONTROL_DOWN), this::toggleBottomPanel);
+    private void registerViewCommands() {
+        workbench.register(new SimpleCommand(CommandId.VIEW_TOGGLE_SIDE, "Toggle Side Bar", wb -> toggleSideBar()));
+        workbench.register(
+                new SimpleCommand(CommandId.VIEW_TOGGLE_BOTTOM, "Toggle Bottom Panel", wb -> toggleBottomPanel()));
+        workbench.register(new SimpleCommand(
+                CommandId.VIEW_EXPLORER, "Explorer", wb -> activityBar.select(ActivityView.EXPLORER)));
+        workbench.register(
+                new SimpleCommand(CommandId.VIEW_SEARCH, "Search", wb -> activityBar.select(ActivityView.SEARCH)));
+        workbench.register(
+                new SimpleCommand(CommandId.VIEW_OUTLINE, "Outline", wb -> activityBar.select(ActivityView.OUTLINE)));
+        workbench.register(new SimpleCommand(
+                CommandId.VIEW_SETTINGS, "Settings", wb -> activityBar.select(ActivityView.SETTINGS)));
     }
 
     private void toggleSideBar() {
