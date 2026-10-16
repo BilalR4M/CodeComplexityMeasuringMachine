@@ -21,12 +21,15 @@ Desktop IDE written in Java with live code-complexity metrics. Successor to the 
 | When | Read |
 |---|---|
 | Always | this file, docs/agents/WORKFLOW.md |
-| No plan yet, or re-planning | docs/agents/PLANNING.md |
+| No plan yet, or re-planning | docs/agents/PLANNING.md, and docs/agents/PLANNING_IDE.md when the work is IDE UX |
 | Creating branches or commits | docs/agents/COMMITS.md |
 | Opening or updating a PR | docs/agents/PULL_REQUESTS.md |
 | Before marking a PR ready; reviewing | docs/agents/REVIEW.md |
 
 Slash commands (Claude Code): `/plan` `/next` `/commit` `/pr` `/review` `/verify`.
+
+## IDE-grade UX re-plan
+`/plan-ide` — read docs/agents/PLANNING_IDE.md and docs/agents/ISSUE_SPEC.md; inputs in docs/assessment/ and docs/design/.
 
 ## Layout
 ```
