@@ -2,6 +2,7 @@ package dev.bilal.ccmm.app;
 
 import dev.bilal.ccmm.app.workbench.ActivityBar;
 import dev.bilal.ccmm.app.workbench.ActivityView;
+import dev.bilal.ccmm.app.workbench.BottomPanel;
 import dev.bilal.ccmm.app.workbench.RegionId;
 import dev.bilal.ccmm.app.workbench.SideBar;
 import dev.bilal.ccmm.app.workbench.SideViews;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -43,6 +43,7 @@ public final class IdeWindow {
     private final ActivityBar activityBar = new ActivityBar();
     private final SideViews sideViews = new SideViews();
     private final SideBar sideBar = new SideBar();
+    private final BottomPanel bottomPanel = new BottomPanel();
     private final Scene scene = new Scene(workbench.root(), 1280, 800);
     private Runnable onListed = () -> {};
     private Runnable onOpened = () -> {};
@@ -95,7 +96,7 @@ public final class IdeWindow {
         workbench.setContent(RegionId.SIDE, sideBar);
         workbench.setContent(RegionId.EDITOR, editor);
         workbench.setContent(RegionId.INSPECTOR, new VBox(panel, room));
-        workbench.setContent(RegionId.BOTTOM, new Label("Problems"));
+        workbench.setContent(RegionId.BOTTOM, bottomPanel);
         wireActivityShortcuts();
         editor.textProperty().addListener((obs, previous, text) -> scheduleAnalysis(text));
         editor.caretPositionProperty().addListener((obs, previous, current) -> panel.caretMoved(caretLine()));
@@ -112,6 +113,10 @@ public final class IdeWindow {
 
     public SideBar sideBar() {
         return sideBar;
+    }
+
+    public BottomPanel bottomPanel() {
+        return bottomPanel;
     }
 
     public Scene scene() {
@@ -296,12 +301,18 @@ public final class IdeWindow {
                         () -> activityBar.select(ActivityView.SETTINGS));
         scene.getAccelerators()
                 .put(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN), this::toggleSideBar);
+        scene.getAccelerators()
+                .put(new KeyCodeCombination(KeyCode.J, KeyCombination.CONTROL_DOWN), this::toggleBottomPanel);
     }
 
     private void toggleSideBar() {
         boolean show = !workbench.isShowing(RegionId.SIDE);
         workbench.show(RegionId.SIDE, show);
         activityBar.setEnabled(show);
+    }
+
+    private void toggleBottomPanel() {
+        workbench.show(RegionId.BOTTOM, !workbench.isShowing(RegionId.BOTTOM));
     }
 
     private static TreeItem<FileNode> item(FileNode node) {
