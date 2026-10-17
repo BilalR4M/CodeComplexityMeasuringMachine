@@ -777,7 +777,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #86
-      pr:         #PENDING
+      pr:         #157
 
 #### E4 — project
 
