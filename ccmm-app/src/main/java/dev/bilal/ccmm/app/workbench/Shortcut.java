@@ -24,6 +24,11 @@ public record Shortcut(KeyCode key, boolean shift, boolean alt, boolean primary)
         return new Shortcut(key, false, true, true);
     }
 
+    /** Alt only (no Ctrl/Cmd), e.g. Alt+Left for navigate back. */
+    public static Shortcut alt(KeyCode key) {
+        return new Shortcut(key, false, true, false);
+    }
+
     /**
      * JavaFX order: shift, control, alt, meta, shortcut.
      * Mac primary → meta; other primary → control.
