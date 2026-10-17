@@ -679,7 +679,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #77
       pr:         #150
 
-- [ ] E2-T10 Fold regions the bake-off allows
+- [x] E2-T10 Fold regions the bake-off allows
       why:        Long methods are the thing this IDE is about, and folding makes them readable.
       scope:      ccmm-app editor
       depends on: E0-T01
@@ -688,6 +688,8 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       ui
       issue:      #78
+      pr:         #151
+      note:       won't-do — editor-bakeoff.md folding feasible: no (RichTextFX 0.11.2 has no fold API)
 
 #### E3 — navigation
 

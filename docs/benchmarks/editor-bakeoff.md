@@ -31,3 +31,7 @@ The percentile helper is duplicated from `KeystrokeReport` so the spike stays st
 go
 
 RichTextFX meets the go thresholds. Keep ADR-0001. Folding stays optional and is currently no.
+
+## Product path (E2-T10)
+
+Folding is **won't-do** for v1. `folding feasible: no` above; RichTextFX 0.11.2 has no fold API. Issue #78 closes with this citation and ships no fold controls. Revisit only if ADR-0008 (or a later editor ADR) adopts a component that exposes folding.
