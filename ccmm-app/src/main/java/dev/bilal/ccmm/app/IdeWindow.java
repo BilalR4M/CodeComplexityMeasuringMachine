@@ -19,6 +19,7 @@ import dev.bilal.ccmm.app.editor.NavigationHistory;
 import dev.bilal.ccmm.app.editor.OpenTab;
 import dev.bilal.ccmm.app.editor.SaveClosePrompt;
 import dev.bilal.ccmm.app.editor.TabStrip;
+import dev.bilal.ccmm.app.session.RecentStore;
 import dev.bilal.ccmm.app.session.Session;
 import dev.bilal.ccmm.app.session.SessionStore;
 import dev.bilal.ccmm.app.settings.ConfirmPrompt;
@@ -101,6 +102,7 @@ public final class IdeWindow {
     private final SettingsStore settingsStore;
     private final SettingsPanel settingsPanel;
     private final SessionStore sessionStore;
+    private final RecentStore recentStore;
     private final SaveClosePrompt saveClosePrompt;
     private final ExecutorService backgroundIo = Executors.newSingleThreadExecutor(task -> {
         Thread thread = new Thread(task, "ccmm-background-io");
@@ -205,6 +207,7 @@ public final class IdeWindow {
             AnalysisScheduler analysisScheduler) {
         this.settingsStore = Objects.requireNonNull(settingsStore);
         this.sessionStore = Objects.requireNonNull(sessionStore);
+        this.recentStore = new RecentStore(settingsStore.file().getParent());
         this.saveClosePrompt = Objects.requireNonNull(saveClosePrompt);
         this.settingsPanel = new SettingsPanel(settingsStore, ConfirmPrompt.dialog());
         this.settingsPanel.setOnThemeChanged(this::applySettingsTheme);
@@ -337,6 +340,10 @@ public final class IdeWindow {
         return sessionStore;
     }
 
+    public RecentStore recentStore() {
+        return recentStore;
+    }
+
     /** Pinned tabs only; preview tabs are excluded from the session pin list. */
     public List<String> pinnedPaths() {
         return editorTabs.pinnedPaths();
@@ -465,6 +472,11 @@ public final class IdeWindow {
         workbench.setStatus("Opening…");
         welcome = false;
         projectRoot = directory;
+        try {
+            recentStore.rememberProject(directory);
+        } catch (RuntimeException ignored) {
+            // recent list must not block open
+        }
         sideViews.setFolderName(directory.getFileName() == null ? directory.toString() : directory.getFileName().toString());
         files.open(directory, node -> Platform.runLater(() -> {
             tree.setRoot(item(node));
@@ -510,6 +522,7 @@ public final class IdeWindow {
         if (existing.isPresent()) {
             if (pin) {
                 existing.get().pin();
+                rememberRecentFile(file);
                 persistSession();
             }
             editorTabs.selectPath(next);
@@ -540,6 +553,7 @@ public final class IdeWindow {
             Document opened = new Document(next, ok.text(), ok.lineEnding(), bytes);
             if (pin) {
                 editorTabs.openPinned(opened);
+                rememberRecentFile(file);
             } else {
                 editorTabs.openPreview(opened);
             }
@@ -548,6 +562,17 @@ public final class IdeWindow {
             workbench.setStatus("");
             onOpened.run();
         }));
+    }
+
+    private void rememberRecentFile(Path file) {
+        if (file == null) {
+            return;
+        }
+        try {
+            recentStore.rememberFile(file);
+        } catch (RuntimeException ignored) {
+            // recent list must not block pin
+        }
     }
 
     private void applyRestoredSession(Session session) {
@@ -640,6 +665,9 @@ public final class IdeWindow {
                 enterLargeFileMode();
             }
             editorTabs.pinActive();
+            if (projectRoot != null && document != null) {
+                rememberRecentFile(projectRoot.resolve(document.relativePath()));
+            }
             tabStrip.refresh();
             persistSession();
         } catch (IllegalArgumentException failure) {
