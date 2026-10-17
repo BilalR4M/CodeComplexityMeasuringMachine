@@ -757,7 +757,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #84
       pr:         #155
 
-- [ ] E3-T07 Remember recent files and projects
+- [x] E3-T07 Remember recent files and projects
       why:        The welcome screen and quick open need a recent list.
       scope:      ccmm-app session
       depends on: E1-T09
@@ -766,6 +766,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #85
+      pr:         #TBD
 
 - [ ] E3-T08 Add the welcome screen
       why:        An empty editor does not tell the user what to do.
