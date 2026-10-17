@@ -2,6 +2,8 @@ package dev.bilal.ccmm.app;
 
 import dev.bilal.ccmm.app.document.Document;
 import dev.bilal.ccmm.app.document.EditOrigin;
+import dev.bilal.ccmm.app.session.Session;
+import dev.bilal.ccmm.app.session.SessionStore;
 import dev.bilal.ccmm.app.settings.ConfirmPrompt;
 import dev.bilal.ccmm.app.settings.Settings;
 import dev.bilal.ccmm.app.settings.SettingsPanel;
@@ -26,6 +28,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -56,10 +60,18 @@ public final class IdeWindow {
     private final Keymap keymap = Keymap.seeded(Keymap.detectPlatform());
     private final SettingsStore settingsStore;
     private final SettingsPanel settingsPanel;
+    private final SessionStore sessionStore;
+    private final ExecutorService sessionIo = Executors.newSingleThreadExecutor(task -> {
+        Thread thread = new Thread(task, "ccmm-session");
+        thread.setDaemon(true);
+        return thread;
+    });
     private final Scene scene = new Scene(workbench.root(), 1280, 800);
+    private final List<String> pinnedPaths = new ArrayList<>();
     private Runnable onListed = () -> {};
     private Runnable onOpened = () -> {};
     private Runnable onAnalyzed = () -> {};
+    private Runnable onRestored = () -> {};
     private Path projectRoot;
     private Document document;
     private AnalysisResult latest;
@@ -67,21 +79,43 @@ public final class IdeWindow {
     private int openGeneration;
     private boolean remoteFlushScheduled;
     private boolean syncingEditor;
+    private boolean welcome = true;
 
     public IdeWindow() {
-        this(AnalysisScheduler.QUIET_MILLIS, DirectoryPrompt.chooser(), new SettingsStore(SettingsStore.defaultDirectory()));
+        this(AnalysisScheduler.QUIET_MILLIS, DirectoryPrompt.chooser(), SettingsStore.defaultDirectory());
     }
 
     IdeWindow(long analysisDelayMs) {
-        this(analysisDelayMs, DirectoryPrompt.chooser(), new SettingsStore(SettingsStore.defaultDirectory()));
+        this(analysisDelayMs, DirectoryPrompt.chooser(), SettingsStore.defaultDirectory());
     }
 
     IdeWindow(long analysisDelayMs, DirectoryPrompt directoryPrompt) {
-        this(analysisDelayMs, directoryPrompt, new SettingsStore(SettingsStore.defaultDirectory()));
+        this(analysisDelayMs, directoryPrompt, SettingsStore.defaultDirectory());
+    }
+
+    IdeWindow(long analysisDelayMs, DirectoryPrompt directoryPrompt, Path configDirectory) {
+        this(
+                analysisDelayMs,
+                directoryPrompt,
+                new SettingsStore(configDirectory),
+                new SessionStore(configDirectory));
     }
 
     IdeWindow(long analysisDelayMs, DirectoryPrompt directoryPrompt, SettingsStore settingsStore) {
+        this(
+                analysisDelayMs,
+                directoryPrompt,
+                settingsStore,
+                new SessionStore(settingsStore.file().getParent()));
+    }
+
+    IdeWindow(
+            long analysisDelayMs,
+            DirectoryPrompt directoryPrompt,
+            SettingsStore settingsStore,
+            SessionStore sessionStore) {
         this.settingsStore = Objects.requireNonNull(settingsStore);
+        this.sessionStore = Objects.requireNonNull(sessionStore);
         this.settingsPanel = new SettingsPanel(settingsStore, ConfirmPrompt.dialog());
         this.settingsPanel.setOnThemeChanged(this::applySettingsTheme);
         analysis = new AnalysisScheduler(analysisDelayMs, Platform::runLater);
@@ -140,6 +174,37 @@ public final class IdeWindow {
 
     Document document() {
         return document;
+    }
+
+    public SessionStore sessionStore() {
+        return sessionStore;
+    }
+
+    public List<String> pinnedPaths() {
+        return List.copyOf(pinnedPaths);
+    }
+
+    public boolean isWelcome() {
+        return welcome;
+    }
+
+    public Path projectRoot() {
+        return projectRoot;
+    }
+
+    public void setOnRestored(Runnable onRestored) {
+        this.onRestored = Objects.requireNonNull(onRestored);
+    }
+
+    /**
+     * Loads session.properties after the stage is shown. Existence checks run off
+     * the FX thread; a missing folder leaves the welcome state.
+     */
+    public void restoreSession() {
+        sessionIo.execute(() -> {
+            Session existing = sessionStore.existing(sessionStore.load());
+            Platform.runLater(() -> applyRestoredSession(existing));
+        });
     }
 
     public ActivityBar activityBar() {
@@ -220,6 +285,7 @@ public final class IdeWindow {
             return;
         }
         workbench.setStatus("Opening…");
+        welcome = false;
         projectRoot = directory;
         sideViews.setFolderName(directory.getFileName() == null ? directory.toString() : directory.getFileName().toString());
         files.open(directory, node -> Platform.runLater(() -> {
@@ -229,11 +295,14 @@ public final class IdeWindow {
             if (activityBar.selected() == ActivityView.SEARCH) {
                 sideViews.show(ActivityView.SEARCH);
             }
+            persistSession();
             onListed.run();
         }));
     }
 
     public void close() {
+        persistSession();
+        sessionIo.shutdown();
         files.close();
         analysis.close();
     }
@@ -274,10 +343,74 @@ public final class IdeWindow {
             } finally {
                 syncingEditor = false;
             }
+            pin(next);
             workbench.setStatus("");
             updateCaretStatus();
             onOpened.run();
         }));
+    }
+
+    private void applyRestoredSession(Session session) {
+        workbench.show(RegionId.SIDE, session.sideBarVisible());
+        activityBar.setEnabled(session.sideBarVisible());
+        workbench.show(RegionId.BOTTOM, session.bottomVisible());
+        workbench.show(RegionId.INSPECTOR, session.inspectorVisible());
+        if (session.lastFolder() == null) {
+            welcome = true;
+            projectRoot = null;
+            pinnedPaths.clear();
+            onRestored.run();
+            return;
+        }
+        pinnedPaths.clear();
+        pinnedPaths.addAll(session.pinned());
+        List<String> toOpen = List.copyOf(session.pinned());
+        Runnable previousListed = onListed;
+        setOnListed(() -> {
+            setOnListed(previousListed);
+            openPinnedQueue(toOpen, 0, () -> {
+                previousListed.run();
+                onRestored.run();
+            });
+        });
+        open(session.lastFolder());
+    }
+
+    private void openPinnedQueue(List<String> pins, int index, Runnable done) {
+        if (index >= pins.size() || projectRoot == null) {
+            done.run();
+            return;
+        }
+        Path file = projectRoot.resolve(pins.get(index));
+        Runnable previousOpened = onOpened;
+        setOnOpened(() -> {
+            setOnOpened(previousOpened);
+            openPinnedQueue(pins, index + 1, done);
+        });
+        openFile(file);
+    }
+
+    private void pin(String relativePath) {
+        pinnedPaths.remove(relativePath);
+        pinnedPaths.add(relativePath);
+        while (pinnedPaths.size() > SessionStore.MAX_PINNED) {
+            pinnedPaths.remove(0);
+        }
+        persistSession();
+    }
+
+    private void persistSession() {
+        Session session = new Session(
+                projectRoot,
+                pinnedPaths,
+                workbench.isShowing(RegionId.SIDE),
+                workbench.isShowing(RegionId.BOTTOM),
+                workbench.isShowing(RegionId.INSPECTOR));
+        try {
+            sessionStore.save(session);
+        } catch (RuntimeException ignored) {
+            // session write must not break close or open
+        }
     }
 
     private void enqueueRemote(List<Message> messages) {

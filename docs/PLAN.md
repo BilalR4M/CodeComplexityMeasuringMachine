@@ -567,7 +567,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #67
       pr:         #139
 
-- [ ] E1-T10 Restore the session
+- [x] E1-T10 Restore the session
       why:        Reopening the IDE should bring back the folder and the open files.
       scope:      ccmm-app session
       depends on: E1-T09, E2-T01
@@ -576,6 +576,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #68
+      pr:         #142
 
 #### E2 — editor
 
