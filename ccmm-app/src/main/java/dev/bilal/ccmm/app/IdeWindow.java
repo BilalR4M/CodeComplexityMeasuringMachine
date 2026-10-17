@@ -2,6 +2,10 @@ package dev.bilal.ccmm.app;
 
 import dev.bilal.ccmm.app.document.Document;
 import dev.bilal.ccmm.app.document.EditOrigin;
+import dev.bilal.ccmm.app.editor.EditorTabs;
+import dev.bilal.ccmm.app.editor.OpenTab;
+import dev.bilal.ccmm.app.editor.SaveClosePrompt;
+import dev.bilal.ccmm.app.editor.TabStrip;
 import dev.bilal.ccmm.app.session.Session;
 import dev.bilal.ccmm.app.session.SessionStore;
 import dev.bilal.ccmm.app.settings.ConfirmPrompt;
@@ -23,6 +27,8 @@ import dev.bilal.ccmm.app.workbench.Theme;
 import dev.bilal.ccmm.app.workbench.Workbench;
 import dev.bilal.ccmm.collab.protocol.Message;
 import dev.bilal.ccmm.core.AnalysisResult;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -38,6 +44,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.util.UndoUtils;
@@ -58,16 +66,18 @@ public final class IdeWindow {
     private final SideBar sideBar = new SideBar();
     private final BottomPanel bottomPanel = new BottomPanel();
     private final Keymap keymap = Keymap.seeded(Keymap.detectPlatform());
+    private final EditorTabs editorTabs = new EditorTabs();
+    private final TabStrip tabStrip = new TabStrip(editorTabs);
     private final SettingsStore settingsStore;
     private final SettingsPanel settingsPanel;
     private final SessionStore sessionStore;
-    private final ExecutorService sessionIo = Executors.newSingleThreadExecutor(task -> {
-        Thread thread = new Thread(task, "ccmm-session");
+    private final SaveClosePrompt saveClosePrompt;
+    private final ExecutorService backgroundIo = Executors.newSingleThreadExecutor(task -> {
+        Thread thread = new Thread(task, "ccmm-background-io");
         thread.setDaemon(true);
         return thread;
     });
     private final Scene scene = new Scene(workbench.root(), 1280, 800);
-    private final List<String> pinnedPaths = new ArrayList<>();
     private Runnable onListed = () -> {};
     private Runnable onOpened = () -> {};
     private Runnable onAnalyzed = () -> {};
@@ -98,7 +108,8 @@ public final class IdeWindow {
                 analysisDelayMs,
                 directoryPrompt,
                 new SettingsStore(configDirectory),
-                new SessionStore(configDirectory));
+                new SessionStore(configDirectory),
+                SaveClosePrompt.dialog());
     }
 
     IdeWindow(long analysisDelayMs, DirectoryPrompt directoryPrompt, SettingsStore settingsStore) {
@@ -106,7 +117,8 @@ public final class IdeWindow {
                 analysisDelayMs,
                 directoryPrompt,
                 settingsStore,
-                new SessionStore(settingsStore.file().getParent()));
+                new SessionStore(settingsStore.file().getParent()),
+                SaveClosePrompt.dialog());
     }
 
     IdeWindow(
@@ -114,8 +126,31 @@ public final class IdeWindow {
             DirectoryPrompt directoryPrompt,
             SettingsStore settingsStore,
             SessionStore sessionStore) {
+        this(analysisDelayMs, directoryPrompt, settingsStore, sessionStore, SaveClosePrompt.dialog());
+    }
+
+    IdeWindow(
+            long analysisDelayMs,
+            DirectoryPrompt directoryPrompt,
+            SettingsStore settingsStore,
+            SaveClosePrompt saveClosePrompt) {
+        this(
+                analysisDelayMs,
+                directoryPrompt,
+                settingsStore,
+                new SessionStore(settingsStore.file().getParent()),
+                saveClosePrompt);
+    }
+
+    IdeWindow(
+            long analysisDelayMs,
+            DirectoryPrompt directoryPrompt,
+            SettingsStore settingsStore,
+            SessionStore sessionStore,
+            SaveClosePrompt saveClosePrompt) {
         this.settingsStore = Objects.requireNonNull(settingsStore);
         this.sessionStore = Objects.requireNonNull(sessionStore);
+        this.saveClosePrompt = Objects.requireNonNull(saveClosePrompt);
         this.settingsPanel = new SettingsPanel(settingsStore, ConfirmPrompt.dialog());
         this.settingsPanel.setOnThemeChanged(this::applySettingsTheme);
         analysis = new AnalysisScheduler(analysisDelayMs, Platform::runLater);
@@ -128,9 +163,17 @@ public final class IdeWindow {
                 setText(empty || item == null ? null : item.name());
             }
         });
+        tree.setOnMouseClicked(event -> {
+            TreeItem<FileNode> item = tree.getSelectionModel().getSelectedItem();
+            if (item == null || item.getValue() == null || item.getValue().directory()) {
+                return;
+            }
+            boolean pin = event.getButton() == MouseButton.PRIMARY && event.getClickCount() >= 2;
+            openFile(item.getValue().path(), pin);
+        });
         tree.getSelectionModel().selectedItemProperty().addListener((obs, previous, item) -> {
             if (item != null && item.getValue() != null && !item.getValue().directory()) {
-                openFile(item.getValue().path());
+                openFile(item.getValue().path(), false);
             }
         });
         workbench.register(new OpenFolderCommand(directoryPrompt, this::open, () -> scene.getWindow()));
@@ -154,9 +197,13 @@ public final class IdeWindow {
                 activityBar.setEnabled(true);
             }
         });
+        tabStrip.setOnSelect(this::activateTab);
+        tabStrip.setOnClose(this::requestCloseTab);
+        VBox editorStack = new VBox(tabStrip.root(), editor);
+        VBox.setVgrow(editor, Priority.ALWAYS);
         workbench.setContent(RegionId.ACTIVITY, activityBar);
         workbench.setContent(RegionId.SIDE, sideBar);
-        workbench.setContent(RegionId.EDITOR, editor);
+        workbench.setContent(RegionId.EDITOR, editorStack);
         workbench.setContent(RegionId.INSPECTOR, new VBox(panel, room));
         workbench.setContent(RegionId.BOTTOM, bottomPanel);
         keymap.install(scene, workbench);
@@ -170,18 +217,28 @@ public final class IdeWindow {
         });
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
         updateCaretStatus();
+        tabStrip.refresh();
     }
 
     Document document() {
         return document;
     }
 
+    public EditorTabs editorTabs() {
+        return editorTabs;
+    }
+
+    public TabStrip tabStrip() {
+        return tabStrip;
+    }
+
     public SessionStore sessionStore() {
         return sessionStore;
     }
 
+    /** Pinned tabs only; preview tabs are excluded from the session pin list. */
     public List<String> pinnedPaths() {
-        return List.copyOf(pinnedPaths);
+        return editorTabs.pinnedPaths();
     }
 
     public boolean isWelcome() {
@@ -201,7 +258,7 @@ public final class IdeWindow {
      * the FX thread; a missing folder leaves the welcome state.
      */
     public void restoreSession() {
-        sessionIo.execute(() -> {
+        backgroundIo.execute(() -> {
             Session existing = sessionStore.existing(sessionStore.load());
             Platform.runLater(() -> applyRestoredSession(existing));
         });
@@ -302,7 +359,7 @@ public final class IdeWindow {
 
     public void close() {
         persistSession();
-        sessionIo.shutdown();
+        backgroundIo.shutdown();
         files.close();
         analysis.close();
     }
@@ -318,7 +375,7 @@ public final class IdeWindow {
         }
     }
 
-    private void openFile(Path file) {
+    private void openFile(Path file, boolean pin) {
         if (file == null || projectRoot == null) {
             return;
         }
@@ -327,25 +384,31 @@ public final class IdeWindow {
             workbench.setStatus(Document.ONLY_JAVA_MESSAGE);
             return;
         }
+        var existing = editorTabs.tabs().stream().filter(tab -> tab.relativePath().equals(next)).findFirst();
+        if (existing.isPresent()) {
+            if (pin) {
+                existing.get().pin();
+                persistSession();
+            }
+            editorTabs.selectPath(next);
+            showActiveTab();
+            onOpened.run();
+            return;
+        }
         int ticket = ++openGeneration;
         files.read(file, text -> Platform.runLater(() -> {
             if (ticket != openGeneration || text == null) {
                 return;
             }
-            if (document == null || !document.relativePath().equals(next)) {
-                lastGood = null;
-                panel.showUnparsed("");
+            Document opened = new Document(next, text);
+            if (pin) {
+                editorTabs.openPinned(opened);
+            } else {
+                editorTabs.openPreview(opened);
             }
-            document = new Document(next, text);
-            syncingEditor = true;
-            try {
-                editor.replaceText(text);
-            } finally {
-                syncingEditor = false;
-            }
-            pin(next);
+            showActiveTab();
+            persistSession();
             workbench.setStatus("");
-            updateCaretStatus();
             onOpened.run();
         }));
     }
@@ -358,12 +421,9 @@ public final class IdeWindow {
         if (session.lastFolder() == null) {
             welcome = true;
             projectRoot = null;
-            pinnedPaths.clear();
             onRestored.run();
             return;
         }
-        pinnedPaths.clear();
-        pinnedPaths.addAll(session.pinned());
         List<String> toOpen = List.copyOf(session.pinned());
         Runnable previousListed = onListed;
         setOnListed(() -> {
@@ -387,22 +447,13 @@ public final class IdeWindow {
             setOnOpened(previousOpened);
             openPinnedQueue(pins, index + 1, done);
         });
-        openFile(file);
-    }
-
-    private void pin(String relativePath) {
-        pinnedPaths.remove(relativePath);
-        pinnedPaths.add(relativePath);
-        while (pinnedPaths.size() > SessionStore.MAX_PINNED) {
-            pinnedPaths.remove(0);
-        }
-        persistSession();
+        openFile(file, true);
     }
 
     private void persistSession() {
         Session session = new Session(
                 projectRoot,
-                pinnedPaths,
+                editorTabs.pinnedPaths(),
                 workbench.isShowing(RegionId.SIDE),
                 workbench.isShowing(RegionId.BOTTOM),
                 workbench.isShowing(RegionId.INSPECTOR));
@@ -447,9 +498,112 @@ public final class IdeWindow {
         }
         try {
             document.replace(0, document.text().length(), text, EditOrigin.LOCAL);
+            editorTabs.pinActive();
+            tabStrip.refresh();
+            persistSession();
         } catch (IllegalArgumentException failure) {
             workbench.setStatus(failure.getMessage());
         }
+    }
+
+    private void activateTab(int index) {
+        editorTabs.select(index);
+        showActiveTab();
+    }
+
+    private void showActiveTab() {
+        OpenTab tab = editorTabs.active().orElse(null);
+        if (tab == null) {
+            document = null;
+            syncingEditor = true;
+            try {
+                editor.clear();
+            } finally {
+                syncingEditor = false;
+            }
+            lastGood = null;
+            panel.showUnparsed("");
+            tabStrip.refresh();
+            updateCaretStatus();
+            return;
+        }
+        if (document == null || !document.relativePath().equals(tab.relativePath())) {
+            lastGood = null;
+            panel.showUnparsed("");
+        }
+        document = tab.document();
+        syncingEditor = true;
+        try {
+            editor.replaceText(document.text());
+        } finally {
+            syncingEditor = false;
+        }
+        tabStrip.refresh();
+        updateCaretStatus();
+        scheduleAnalysis(document.text());
+    }
+
+    private void requestCloseTab(int index) {
+        if (index < 0 || index >= editorTabs.tabs().size()) {
+            return;
+        }
+        editorTabs.select(index);
+        showActiveTab();
+        closeActiveTab();
+    }
+
+    private void closeActiveTab() {
+        OpenTab tab = editorTabs.active().orElse(null);
+        if (tab == null) {
+            return;
+        }
+        if (tab.document().dirty()) {
+            SaveClosePrompt.Choice choice = saveClosePrompt.ask(tab.fileName(), scene.getWindow());
+            if (choice == SaveClosePrompt.Choice.CANCEL) {
+                return;
+            }
+            if (choice == SaveClosePrompt.Choice.SAVE) {
+                saveActiveThenClose();
+                return;
+            }
+        }
+        editorTabs.closeActive();
+        showActiveTab();
+        persistSession();
+    }
+
+    private void saveActiveThenClose() {
+        OpenTab tab = editorTabs.active().orElse(null);
+        if (tab == null || projectRoot == null) {
+            return;
+        }
+        String relative = tab.relativePath();
+        String text = tab.document().text();
+        String fileName = tab.fileName();
+        Path file = projectRoot.resolve(relative);
+        backgroundIo.execute(() -> {
+            try {
+                Files.writeString(file, text, StandardCharsets.UTF_8);
+                Platform.runLater(() -> {
+                    if (document != null && document.relativePath().equals(relative)) {
+                        document.markSaved();
+                    }
+                    editorTabs.closeActive();
+                    showActiveTab();
+                    persistSession();
+                });
+            } catch (IOException failure) {
+                Platform.runLater(() -> workbench.setStatus("Could not save " + fileName));
+            }
+        });
+    }
+
+    private void reopenClosedTab() {
+        String path = editorTabs.reopen().orElse(null);
+        if (path == null || projectRoot == null) {
+            return;
+        }
+        openFile(projectRoot.resolve(path), true);
     }
 
     private void scheduleAnalysis(String text) {
@@ -510,6 +664,8 @@ public final class IdeWindow {
                 new SimpleCommand(CommandId.VIEW_OUTLINE, "Outline", wb -> activityBar.select(ActivityView.OUTLINE)));
         workbench.register(new SimpleCommand(
                 CommandId.VIEW_SETTINGS, "Settings", wb -> activityBar.select(ActivityView.SETTINGS)));
+        workbench.register(new SimpleCommand(CommandId.CLOSE_TAB, "Close Tab", wb -> closeActiveTab()));
+        workbench.register(new SimpleCommand(CommandId.REOPEN_TAB, "Reopen Closed Tab", wb -> reopenClosedTab()));
     }
 
     private void toggleSideBar() {
