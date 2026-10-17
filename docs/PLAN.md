@@ -766,7 +766,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #85
-      pr:         #TBD
+      pr:         #156
 
 - [ ] E3-T08 Add the welcome screen
       why:        An empty editor does not tell the user what to do.
