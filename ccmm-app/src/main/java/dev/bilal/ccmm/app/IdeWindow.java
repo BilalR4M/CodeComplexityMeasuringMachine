@@ -26,6 +26,7 @@ import dev.bilal.ccmm.app.workbench.ActivityBar;
 import dev.bilal.ccmm.app.workbench.ActivityView;
 import dev.bilal.ccmm.app.workbench.BottomPanel;
 import dev.bilal.ccmm.app.workbench.CommandId;
+import dev.bilal.ccmm.app.workbench.CommandPalette;
 import dev.bilal.ccmm.app.workbench.DirectoryPrompt;
 import dev.bilal.ccmm.app.workbench.Keymap;
 import dev.bilal.ccmm.app.workbench.OpenFolderCommand;
@@ -85,6 +86,7 @@ public final class IdeWindow {
     private final SideBar sideBar = new SideBar();
     private final BottomPanel bottomPanel = new BottomPanel();
     private final Keymap keymap = Keymap.seeded(Keymap.detectPlatform());
+    private final CommandPalette commandPalette = new CommandPalette(keymap);
     private final EditorTabs editorTabs = new EditorTabs();
     private final TabStrip tabStrip = new TabStrip(editorTabs);
     private final FindReplaceBar findReplaceBar = new FindReplaceBar();
@@ -265,6 +267,7 @@ public final class IdeWindow {
         workbench.setContent(RegionId.EDITOR, editorStack);
         workbench.setContent(RegionId.INSPECTOR, new VBox(panel, room));
         workbench.setContent(RegionId.BOTTOM, bottomPanel);
+        commandPalette.setOnRun(id -> workbench.execute(id));
         keymap.install(scene, workbench);
         editor.textProperty().addListener((obs, previous, text) -> {
             syncDocumentFromEditor(text);
@@ -363,6 +366,10 @@ public final class IdeWindow {
 
     public Keymap keymap() {
         return keymap;
+    }
+
+    public CommandPalette commandPalette() {
+        return commandPalette;
     }
 
     public SettingsStore settingsStore() {
@@ -836,6 +843,15 @@ public final class IdeWindow {
         workbench.register(new SimpleCommand(CommandId.FIND, "Find", wb -> findReplaceBar.show(false)));
         workbench.register(new SimpleCommand(CommandId.REPLACE, "Replace", wb -> findReplaceBar.show(true)));
         workbench.register(new SimpleCommand(CommandId.GO_TO_LINE, GoToLineBar.TITLE, wb -> goToLineBar.show()));
+        workbench.register(new SimpleCommand(CommandId.COMMAND_PALETTE, CommandPalette.TITLE, wb -> showCommandPalette()));
+    }
+
+    private void showCommandPalette() {
+        if (commandPalette.isShowing()) {
+            commandPalette.hide();
+            return;
+        }
+        commandPalette.show(scene.getWindow(), workbench.commands());
     }
 
     private void scheduleFind(String query, boolean matchCase) {

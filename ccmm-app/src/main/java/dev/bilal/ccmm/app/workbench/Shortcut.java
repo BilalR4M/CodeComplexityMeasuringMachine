@@ -39,4 +39,20 @@ public record Shortcut(KeyCode key, boolean shift, boolean alt, boolean primary)
                 primary && platform == Keymap.Platform.MAC ? down : up;
         return new KeyCodeCombination(key, shiftMod, controlMod, altMod, metaMod, up);
     }
+
+    /** Human label for the palette, e.g. {@code Ctrl+Shift+P} or {@code Cmd+P}. */
+    public String label(Keymap.Platform platform) {
+        StringBuilder text = new StringBuilder();
+        if (primary) {
+            text.append(platform == Keymap.Platform.MAC ? "Cmd" : "Ctrl").append('+');
+        }
+        if (shift) {
+            text.append("Shift+");
+        }
+        if (alt) {
+            text.append("Alt+");
+        }
+        text.append(key.getName().length() == 1 ? key.getName().toUpperCase() : key.getName());
+        return text.toString();
+    }
 }
