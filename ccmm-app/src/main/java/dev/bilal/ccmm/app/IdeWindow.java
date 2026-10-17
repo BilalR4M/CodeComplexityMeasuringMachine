@@ -6,6 +6,8 @@ import dev.bilal.ccmm.app.document.LineEnding;
 import dev.bilal.ccmm.app.document.Utf8Text;
 import dev.bilal.ccmm.app.editor.AutoIndent;
 import dev.bilal.ccmm.app.editor.BracketMatcher;
+import dev.bilal.ccmm.app.editor.BreadcrumbBar;
+import dev.bilal.ccmm.app.editor.Breadcrumbs;
 import dev.bilal.ccmm.app.editor.BufferFinder;
 import dev.bilal.ccmm.app.editor.EditorTabs;
 import dev.bilal.ccmm.app.editor.FindReplaceBar;
@@ -92,6 +94,7 @@ public final class IdeWindow {
     private final TabStrip tabStrip = new TabStrip(editorTabs);
     private final FindReplaceBar findReplaceBar = new FindReplaceBar();
     private final GoToLineBar goToLineBar = new GoToLineBar();
+    private final BreadcrumbBar breadcrumbBar = new BreadcrumbBar();
     private final SettingsStore settingsStore;
     private final SettingsPanel settingsPanel;
     private final SessionStore sessionStore;
@@ -262,8 +265,14 @@ public final class IdeWindow {
         findReplaceBar.setOnQueryChanged(query -> scheduleFind(query, findReplaceBar.matchCase()));
         goToLineBar.setOnGo(this::goToLine);
         goToLineBar.setOnClose(goToLineBar::hide);
-        VBox editorStack =
-                new VBox(tabStrip.root(), findReplaceBar.root(), goToLineBar.root(), largeFileBanner, editor);
+        breadcrumbBar.setOnPathSegment(this::revealInExplorer);
+        VBox editorStack = new VBox(
+                tabStrip.root(),
+                findReplaceBar.root(),
+                goToLineBar.root(),
+                breadcrumbBar.root(),
+                largeFileBanner,
+                editor);
         VBox.setVgrow(editor, Priority.ALWAYS);
         workbench.setContent(RegionId.ACTIVITY, activityBar);
         workbench.setContent(RegionId.SIDE, sideBar);
@@ -281,6 +290,7 @@ public final class IdeWindow {
         editor.caretPositionProperty().addListener((obs, previous, current) -> {
             panel.caretMoved(caretLine());
             updateCaretStatus();
+            refreshBreadcrumbs();
             scheduleBracketMatch();
         });
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
@@ -377,6 +387,10 @@ public final class IdeWindow {
 
     public OutlineView outlineView() {
         return outlineView;
+    }
+
+    public BreadcrumbBar breadcrumbBar() {
+        return breadcrumbBar;
     }
 
     public SettingsStore settingsStore() {
@@ -644,6 +658,7 @@ public final class IdeWindow {
             latest = null;
             panel.showUnparsed("");
             refreshOutline();
+            refreshBreadcrumbs();
             tabStrip.refresh();
             updateCaretStatus();
             updateLargeFileBanner();
@@ -670,6 +685,7 @@ public final class IdeWindow {
         } else {
             updateLargeFileBanner();
             refreshOutline();
+            refreshBreadcrumbs();
             scheduleAnalysis(document.text());
             scheduleHighlight();
         }
@@ -788,6 +804,7 @@ public final class IdeWindow {
         paintEditorStyles();
         updateLargeFileBanner();
         refreshOutline();
+        refreshBreadcrumbs();
     }
 
     private void refreshOutline() {
@@ -843,8 +860,74 @@ public final class IdeWindow {
                 }
             }
             refreshOutline();
+            refreshBreadcrumbs();
         }
         onAnalyzed.run();
+    }
+
+    private void refreshBreadcrumbs() {
+        if (document == null) {
+            breadcrumbBar.clear();
+            return;
+        }
+        String methodName = null;
+        if (lastGood != null
+                && lastGood.relativePath().equals(document.relativePath())
+                && Document.isJavaPath(document.relativePath())) {
+            var method = MetricsPanel.methodAt(lastGood.file(), caretLine());
+            if (method != null) {
+                methodName = method.name();
+            }
+        }
+        breadcrumbBar.show(Breadcrumbs.segments(document.relativePath(), methodName));
+    }
+
+    private void revealInExplorer(String relativePath) {
+        if (relativePath == null || projectRoot == null || tree.getRoot() == null) {
+            return;
+        }
+        TreeItem<FileNode> found = findTreeItem(tree.getRoot(), relativePath);
+        if (found == null) {
+            return;
+        }
+        expandAncestors(found);
+        activityBar.select(ActivityView.EXPLORER);
+        tree.getSelectionModel().select(found);
+        tree.scrollTo(tree.getRow(found));
+    }
+
+    private static TreeItem<FileNode> findTreeItem(TreeItem<FileNode> node, String relativePath) {
+        if (node == null || node.getValue() == null) {
+            return null;
+        }
+        // Match by walking names under the project root item.
+        String[] parts = relativePath.replace('\\', '/').split("/");
+        TreeItem<FileNode> current = node;
+        for (String part : parts) {
+            if (part.isEmpty()) {
+                continue;
+            }
+            TreeItem<FileNode> next = null;
+            for (TreeItem<FileNode> child : current.getChildren()) {
+                if (child.getValue() != null && part.equals(child.getValue().name())) {
+                    next = child;
+                    break;
+                }
+            }
+            if (next == null) {
+                return null;
+            }
+            current = next;
+        }
+        return current == node ? null : current;
+    }
+
+    private static void expandAncestors(TreeItem<FileNode> item) {
+        TreeItem<FileNode> parent = item.getParent();
+        while (parent != null) {
+            parent.setExpanded(true);
+            parent = parent.getParent();
+        }
     }
 
     private int caretLine() {
