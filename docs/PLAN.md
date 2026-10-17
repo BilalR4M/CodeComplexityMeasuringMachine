@@ -688,7 +688,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       ui
       issue:      #78
-      pr:         #TBD
+      pr:         #151
       note:       won't-do — editor-bakeoff.md folding feasible: no (RichTextFX 0.11.2 has no fold API)
 
 #### E3 — navigation
