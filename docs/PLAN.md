@@ -45,11 +45,11 @@ Accepted and unchanged:
 - [ADR-0006](adr/0006-room-auth.md) invite token, accepted.
 - [ADR-0007](adr/0007-cognitive-complexity.md) post-v1, accepted.
 - [ADR-0013](adr/0013-theming.md) token stylesheets (no AtlantaFX), accepted.
+- [ADR-0009](adr/0009-highlighting-engine.md) cancellable regex lexers, accepted.
 
 Proposed for the UX program. None of these are accepted. Implementation issues that name one of them stay blocked until the owner accepts it.
 
 - [ADR-0008](adr/0008-editor-component.md) editor component. The bake-off decides. ADR-0001 stays accepted until a replacement is accepted.
-- [ADR-0009](adr/0009-highlighting-engine.md) highlighting engine.
 - [ADR-0010](adr/0010-language-scope.md) language scope. Recommends opening any text file and keeping Java-only metrics. This asks the owner to change the locked "Java-only language support" line. No language server.
 - [ADR-0011](adr/0011-collaboration-ownership.md) local checkouts plus a hash handshake. The file tree stays unsynced.
 - [ADR-0012](adr/0012-jdk-javafx-version.md) stay on Java 21 and JavaFX 21.0.5.
@@ -602,15 +602,16 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #70
       pr:         #143
 
-- [ ] E2-T03 Highlight the open buffer
+- [x] E2-T03 Highlight the open buffer
       why:        Plain text does not look like an editor, and non-Java files are unreadable today.
       scope:      ccmm-app highlight
-      depends on: E0-T01, E0-T02, E2-T01, ADR-0009 decision
+      depends on: E0-T01, E0-T02, E2-T01, ADR-0009 accepted
       acceptance: A Java buffer is styled off the FX thread and a keystroke stays under 16 ms p95.
       verify:     mvn -B -ntp -pl ccmm-app -am test and a row in docs/benchmarks/highlighting.md for the product path.
       size:       L
       kind:       ui
       issue:      #71
+      pr:         #TBD
 
 - [x] E2-T04 Find and replace in the buffer
       why:        There is no way to find a word in the open file.

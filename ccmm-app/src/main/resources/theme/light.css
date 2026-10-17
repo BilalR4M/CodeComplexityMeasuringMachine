@@ -14,6 +14,11 @@
     -fx-ccmm-selection: #C7E0F4;
     -fx-ccmm-diff-add: #D8F3DC;
     -fx-ccmm-diff-remove: #F8D7DA;
+    -fx-ccmm-syntax-keyword: #005A9E;
+    -fx-ccmm-syntax-string: #8A5A00;
+    -fx-ccmm-syntax-comment: #767676;
+    -fx-ccmm-syntax-number: #0F7B3A;
+    -fx-ccmm-syntax-identifier: #1E1E1E;
     -fx-ccmm-text-on-remote-light: #FFFFFF;
     -fx-ccmm-text-on-remote-dark: #1A1A1A;
     -fx-ccmm-remote-1: #0072B2;
@@ -108,3 +113,9 @@
 .bracket-match {
     -rtfx-background-color: #E3F0FA;
 }
+
+.token-keyword { -fx-fill: -fx-ccmm-syntax-keyword; }
+.token-string { -fx-fill: -fx-ccmm-syntax-string; }
+.token-comment { -fx-fill: -fx-ccmm-syntax-comment; }
+.token-number { -fx-fill: -fx-ccmm-syntax-number; }
+.token-identifier { -fx-fill: -fx-ccmm-syntax-identifier; }
