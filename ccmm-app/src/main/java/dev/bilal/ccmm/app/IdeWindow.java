@@ -2,6 +2,7 @@ package dev.bilal.ccmm.app;
 
 import dev.bilal.ccmm.app.document.Document;
 import dev.bilal.ccmm.app.document.EditOrigin;
+import dev.bilal.ccmm.app.editor.BracketMatcher;
 import dev.bilal.ccmm.app.editor.BufferFinder;
 import dev.bilal.ccmm.app.editor.EditorTabs;
 import dev.bilal.ccmm.app.editor.FindReplaceBar;
@@ -38,6 +39,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -100,6 +102,9 @@ public final class IdeWindow {
     private List<BufferFinder.Match> findMatches = List.of();
     private int findIndex = -1;
     private int findGeneration;
+    private int bracketOpen = -1;
+    private int bracketClose = -1;
+    private int bracketGeneration;
 
     public IdeWindow() {
         this(AnalysisScheduler.QUIET_MILLIS, DirectoryPrompt.chooser(), SettingsStore.defaultDirectory());
@@ -228,10 +233,12 @@ public final class IdeWindow {
         editor.textProperty().addListener((obs, previous, text) -> {
             syncDocumentFromEditor(text);
             scheduleAnalysis(text);
+            scheduleBracketMatch();
         });
         editor.caretPositionProperty().addListener((obs, previous, current) -> {
             panel.caretMoved(caretLine());
             updateCaretStatus();
+            scheduleBracketMatch();
         });
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
         updateCaretStatus();
@@ -256,6 +263,11 @@ public final class IdeWindow {
 
     public GoToLineBar goToLineBar() {
         return goToLineBar;
+    }
+
+    /** Inclusive indices of the highlighted bracket pair, or [-1, -1] when clear. */
+    int[] bracketHighlight() {
+        return new int[] {bracketOpen, bracketClose};
     }
 
     public SessionStore sessionStore() {
@@ -864,6 +876,51 @@ public final class IdeWindow {
             workbench.setStatus("");
         }
         goToLineBar.hide();
+    }
+
+    private void scheduleBracketMatch() {
+        String text = editor.getText();
+        int caret = editor.getCaretPosition();
+        int ticket = ++bracketGeneration;
+        // Windowed scan is ≤ 10k chars; keep it on the FX thread. Larger documents still
+        // only examine the window around the caret (see BracketMatcher.DEFAULT_WINDOW).
+        if (text.length() > BracketMatcher.DEFAULT_WINDOW * 2) {
+            backgroundIo.execute(() -> {
+                Optional<BracketMatcher.Match> match =
+                        BracketMatcher.find(text, caret, BracketMatcher.DEFAULT_WINDOW);
+                Platform.runLater(() -> {
+                    if (ticket != bracketGeneration) {
+                        return;
+                    }
+                    applyBracketHighlight(match);
+                });
+            });
+            return;
+        }
+        applyBracketHighlight(BracketMatcher.find(text, caret, BracketMatcher.DEFAULT_WINDOW));
+    }
+
+    private void applyBracketHighlight(Optional<BracketMatcher.Match> match) {
+        clearBracketHighlight();
+        if (match.isEmpty()) {
+            return;
+        }
+        BracketMatcher.Match found = match.get();
+        editor.setStyleClass(found.open(), found.open() + 1, "bracket-match");
+        editor.setStyleClass(found.close(), found.close() + 1, "bracket-match");
+        bracketOpen = found.open();
+        bracketClose = found.close();
+    }
+
+    private void clearBracketHighlight() {
+        if (bracketOpen >= 0 && bracketOpen < editor.getLength()) {
+            editor.clearStyle(bracketOpen, Math.min(bracketOpen + 1, editor.getLength()));
+        }
+        if (bracketClose >= 0 && bracketClose < editor.getLength()) {
+            editor.clearStyle(bracketClose, Math.min(bracketClose + 1, editor.getLength()));
+        }
+        bracketOpen = -1;
+        bracketClose = -1;
     }
 
     private void toggleSideBar() {

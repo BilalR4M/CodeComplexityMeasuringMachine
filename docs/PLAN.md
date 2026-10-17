@@ -634,7 +634,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #73
       pr:         #145
 
-- [ ] E2-T06 Match brackets
+- [x] E2-T06 Match brackets
       why:        A complexity editor should show which brace belongs to the caret.
       scope:      ccmm-app editor
       depends on: E2-T01
@@ -643,6 +643,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #74
+      pr:         #TBD
 
 - [ ] E2-T07 Auto-indent the next line
       why:        Enter should keep the indent of Java code.
