@@ -755,7 +755,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #84
-      pr:         #TBD
+      pr:         #155
 
 - [ ] E3-T07 Remember recent files and projects
       why:        The welcome screen and quick open need a recent list.
