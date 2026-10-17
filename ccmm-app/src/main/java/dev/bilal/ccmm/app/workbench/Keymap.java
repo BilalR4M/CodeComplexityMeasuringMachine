@@ -82,6 +82,8 @@ public final class Keymap {
         map.bind(Shortcut.primary(KeyCode.W), CommandId.CLOSE_TAB.value());
         map.bind(Shortcut.primaryShift(KeyCode.T), CommandId.REOPEN_TAB.value());
         map.bind(Shortcut.primary(KeyCode.COMMA), CommandId.VIEW_SETTINGS.value());
+        map.bind(Shortcut.alt(KeyCode.LEFT), CommandId.NAV_BACK.value());
+        map.bind(Shortcut.alt(KeyCode.RIGHT), CommandId.NAV_FORWARD.value());
         return map;
     }
 

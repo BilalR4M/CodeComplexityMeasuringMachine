@@ -15,6 +15,7 @@ import dev.bilal.ccmm.app.editor.GoToLine;
 import dev.bilal.ccmm.app.editor.GoToLineBar;
 import dev.bilal.ccmm.app.editor.HighlightScheduler;
 import dev.bilal.ccmm.app.editor.HighlightSpan;
+import dev.bilal.ccmm.app.editor.NavigationHistory;
 import dev.bilal.ccmm.app.editor.OpenTab;
 import dev.bilal.ccmm.app.editor.SaveClosePrompt;
 import dev.bilal.ccmm.app.editor.TabStrip;
@@ -95,6 +96,8 @@ public final class IdeWindow {
     private final FindReplaceBar findReplaceBar = new FindReplaceBar();
     private final GoToLineBar goToLineBar = new GoToLineBar();
     private final BreadcrumbBar breadcrumbBar = new BreadcrumbBar();
+    private final NavigationHistory navigationHistory = new NavigationHistory();
+    private boolean suppressNavigationRecord;
     private final SettingsStore settingsStore;
     private final SettingsPanel settingsPanel;
     private final SessionStore sessionStore;
@@ -291,6 +294,7 @@ public final class IdeWindow {
             panel.caretMoved(caretLine());
             updateCaretStatus();
             refreshBreadcrumbs();
+            recordNavigation();
             scheduleBracketMatch();
         });
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
@@ -391,6 +395,10 @@ public final class IdeWindow {
 
     public BreadcrumbBar breadcrumbBar() {
         return breadcrumbBar;
+    }
+
+    public NavigationHistory navigationHistory() {
+        return navigationHistory;
     }
 
     public SettingsStore settingsStore() {
@@ -965,6 +973,64 @@ public final class IdeWindow {
         workbench.register(new SimpleCommand(CommandId.REPLACE, "Replace", wb -> findReplaceBar.show(true)));
         workbench.register(new SimpleCommand(CommandId.GO_TO_LINE, GoToLineBar.TITLE, wb -> goToLineBar.show()));
         workbench.register(new SimpleCommand(CommandId.COMMAND_PALETTE, CommandPalette.TITLE, wb -> showCommandPalette()));
+        workbench.register(new SimpleCommand(CommandId.NAV_BACK, "Go Back", wb -> navigateBack()));
+        workbench.register(new SimpleCommand(CommandId.NAV_FORWARD, "Go Forward", wb -> navigateForward()));
+    }
+
+    private void recordNavigation() {
+        if (document == null || syncingEditor || suppressNavigationRecord) {
+            return;
+        }
+        navigationHistory.record(document.relativePath(), editor.getCaretPosition(), caretLine());
+    }
+
+    private void navigateBack() {
+        navigationHistory.back(currentLocation()).ifPresent(this::applyNavigation);
+    }
+
+    private void navigateForward() {
+        navigationHistory.forward(currentLocation()).ifPresent(this::applyNavigation);
+    }
+
+    private NavigationHistory.Location currentLocation() {
+        String path = document == null ? "" : document.relativePath();
+        if (path.isBlank()) {
+            return null;
+        }
+        return new NavigationHistory.Location(path, editor.getCaretPosition(), caretLine());
+    }
+
+    private void applyNavigation(NavigationHistory.Location location) {
+        if (projectRoot == null) {
+            return;
+        }
+        suppressNavigationRecord = true;
+        if (document == null || !location.path().equals(document.relativePath())) {
+            openFile(projectRoot.resolve(location.path()), true);
+            Runnable previous = onOpened;
+            setOnOpened(() -> {
+                setOnOpened(previous);
+                try {
+                    moveCaretToOffset(location.offset());
+                } finally {
+                    suppressNavigationRecord = false;
+                }
+                previous.run();
+            });
+            return;
+        }
+        try {
+            moveCaretToOffset(location.offset());
+        } finally {
+            suppressNavigationRecord = false;
+        }
+    }
+
+    private void moveCaretToOffset(int offset) {
+        int clamped = Math.max(0, Math.min(offset, editor.getLength()));
+        editor.moveTo(clamped);
+        editor.requestFollowCaret();
+        editor.requestFocus();
     }
 
     private void showCommandPalette() {

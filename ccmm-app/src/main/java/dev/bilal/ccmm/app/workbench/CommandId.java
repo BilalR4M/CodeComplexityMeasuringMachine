@@ -17,6 +17,8 @@ public record CommandId(String value) {
     public static final CommandId GO_TO_LINE = new CommandId("edit.goToLine");
     public static final CommandId CLOSE_TAB = new CommandId("tab.close");
     public static final CommandId REOPEN_TAB = new CommandId("tab.reopen");
+    public static final CommandId NAV_BACK = new CommandId("nav.back");
+    public static final CommandId NAV_FORWARD = new CommandId("nav.forward");
 
     public CommandId {
         if (value == null || value.isBlank()) {

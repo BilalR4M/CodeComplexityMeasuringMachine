@@ -746,7 +746,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #83
       pr:         #154
 
-- [ ] E3-T06 Navigate back and forward
+- [x] E3-T06 Navigate back and forward
       why:        Jumping to a method needs a way back.
       scope:      ccmm-app navigation
       depends on: E2-T05
@@ -755,6 +755,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #84
+      pr:         #155
 
 - [ ] E3-T07 Remember recent files and projects
       why:        The welcome screen and quick open need a recent list.
