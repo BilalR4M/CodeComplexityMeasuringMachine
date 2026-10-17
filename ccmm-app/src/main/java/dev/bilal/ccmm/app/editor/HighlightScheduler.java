@@ -51,8 +51,13 @@ public final class HighlightScheduler {
         });
     }
 
-    public void close() {
+    /** Drops pending and in-flight work without shutting the worker down. */
+    public void cancel() {
         generation.incrementAndGet();
+    }
+
+    public void close() {
+        cancel();
         worker.shutdownNow();
     }
 }

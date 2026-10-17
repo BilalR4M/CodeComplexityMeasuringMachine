@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -73,6 +74,7 @@ public final class IdeWindow {
     private final HighlightScheduler highlight = new HighlightScheduler(Platform::runLater);
     private final TreeView<FileNode> tree = new TreeView<>();
     private final CodeArea editor = new CodeArea();
+    private final Label largeFileBanner = new Label(Document.LARGE_FILE_BANNER);
     private final SuspendableYes localUndo = new SuspendableYes();
     private final List<Message> remotePending = new ArrayList<>();
     private final MetricsPanel panel = new MetricsPanel();
@@ -175,13 +177,34 @@ public final class IdeWindow {
             SettingsStore settingsStore,
             SessionStore sessionStore,
             SaveClosePrompt saveClosePrompt) {
+        this(
+                analysisDelayMs,
+                directoryPrompt,
+                settingsStore,
+                sessionStore,
+                saveClosePrompt,
+                new AnalysisScheduler(analysisDelayMs, Platform::runLater));
+    }
+
+    /** Package-private for tests that count or stub analysis calls. */
+    IdeWindow(
+            long analysisDelayMs,
+            DirectoryPrompt directoryPrompt,
+            SettingsStore settingsStore,
+            SessionStore sessionStore,
+            SaveClosePrompt saveClosePrompt,
+            AnalysisScheduler analysisScheduler) {
         this.settingsStore = Objects.requireNonNull(settingsStore);
         this.sessionStore = Objects.requireNonNull(sessionStore);
         this.saveClosePrompt = Objects.requireNonNull(saveClosePrompt);
         this.settingsPanel = new SettingsPanel(settingsStore, ConfirmPrompt.dialog());
         this.settingsPanel.setOnThemeChanged(this::applySettingsTheme);
-        analysis = new AnalysisScheduler(analysisDelayMs, Platform::runLater);
+        analysis = Objects.requireNonNull(analysisScheduler);
         applySettingsTheme(settingsStore.current().theme());
+        largeFileBanner.getStyleClass().add("band-warn");
+        largeFileBanner.setWrapText(true);
+        largeFileBanner.setVisible(false);
+        largeFileBanner.setManaged(false);
         tree.setShowRoot(true);
         tree.setCellFactory(view -> new TreeCell<>() {
             @Override
@@ -234,7 +257,8 @@ public final class IdeWindow {
         findReplaceBar.setOnQueryChanged(query -> scheduleFind(query, findReplaceBar.matchCase()));
         goToLineBar.setOnGo(this::goToLine);
         goToLineBar.setOnClose(goToLineBar::hide);
-        VBox editorStack = new VBox(tabStrip.root(), findReplaceBar.root(), goToLineBar.root(), editor);
+        VBox editorStack =
+                new VBox(tabStrip.root(), findReplaceBar.root(), goToLineBar.root(), largeFileBanner, editor);
         VBox.setVgrow(editor, Priority.ALWAYS);
         workbench.setContent(RegionId.ACTIVITY, activityBar);
         workbench.setContent(RegionId.SIDE, sideBar);
@@ -389,6 +413,10 @@ public final class IdeWindow {
         return panel.text();
     }
 
+    boolean largeFileBannerVisible() {
+        return largeFileBanner.isVisible();
+    }
+
     String roomText() {
         return room.text();
     }
@@ -467,7 +495,13 @@ public final class IdeWindow {
                 workbench.setStatus("Could not read " + fileName);
                 return;
             }
-            Document opened = new Document(next, ok.text(), ok.lineEnding());
+            long bytes = -1L;
+            try {
+                bytes = Files.size(file);
+            } catch (IOException ignored) {
+                // string length after read still applies
+            }
+            Document opened = new Document(next, ok.text(), ok.lineEnding(), bytes);
             if (pin) {
                 editorTabs.openPinned(opened);
             } else {
@@ -564,7 +598,11 @@ public final class IdeWindow {
             return;
         }
         try {
+            boolean wasLarge = document.largeFile();
             document.replace(0, document.text().length(), text, EditOrigin.LOCAL);
+            if (document.largeFile() && !wasLarge) {
+                enterLargeFileMode();
+            }
             editorTabs.pinActive();
             tabStrip.refresh();
             persistSession();
@@ -592,6 +630,7 @@ public final class IdeWindow {
             panel.showUnparsed("");
             tabStrip.refresh();
             updateCaretStatus();
+            updateLargeFileBanner();
             workbench.statusBar().clearFileEncoding();
             return;
         }
@@ -609,8 +648,13 @@ public final class IdeWindow {
         tabStrip.refresh();
         updateCaretStatus();
         updateFileEncodingStatus();
-        scheduleAnalysis(document.text());
-        scheduleHighlight();
+        if (document.largeFile()) {
+            enterLargeFileMode();
+        } else {
+            updateLargeFileBanner();
+            scheduleAnalysis(document.text());
+            scheduleHighlight();
+        }
         scheduleBracketMatch();
     }
 
@@ -707,10 +751,30 @@ public final class IdeWindow {
     }
 
     private void scheduleAnalysis(String text) {
-        if (document == null || text == null || !Document.isJavaPath(document.relativePath())) {
+        if (document == null
+                || text == null
+                || document.largeFile()
+                || !Document.isJavaPath(document.relativePath())) {
             return;
         }
         analysis.schedule(text, document.relativePath(), this::publish);
+    }
+
+    private void enterLargeFileMode() {
+        analysis.cancel();
+        highlight.cancel();
+        highlightSpans = List.of();
+        lastGood = null;
+        latest = null;
+        panel.showUnparsed("");
+        paintEditorStyles();
+        updateLargeFileBanner();
+    }
+
+    private void updateLargeFileBanner() {
+        boolean show = document != null && document.largeFile();
+        largeFileBanner.setVisible(show);
+        largeFileBanner.setManaged(show);
     }
 
     private void publish(AnalysisResult result) {
@@ -978,7 +1042,7 @@ public final class IdeWindow {
     }
 
     private void scheduleHighlight() {
-        if (document == null || !Document.isJavaPath(document.relativePath())) {
+        if (document == null || document.largeFile() || !Document.isJavaPath(document.relativePath())) {
             highlightSpans = List.of();
             paintEditorStyles();
             return;

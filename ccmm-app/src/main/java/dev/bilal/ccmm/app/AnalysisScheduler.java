@@ -54,11 +54,17 @@ final class AnalysisScheduler {
         pending = worker.schedule(() -> finish(ticket, source, relativePath, onResult), delayMs, TimeUnit.MILLISECONDS);
     }
 
-    void close() {
+    /** Drops pending and in-flight work without shutting the worker down. */
+    void cancel() {
         generation.incrementAndGet();
         if (pending != null) {
             pending.cancel(false);
+            pending = null;
         }
+    }
+
+    void close() {
+        cancel();
         worker.shutdown();
     }
 
