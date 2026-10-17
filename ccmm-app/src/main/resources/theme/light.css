@@ -103,3 +103,8 @@
 .remote-chip-6 { -fx-background-color: -fx-ccmm-remote-6; -fx-text-fill: -fx-ccmm-text-on-remote-dark; }
 .remote-chip-7 { -fx-background-color: -fx-ccmm-remote-7; -fx-text-fill: -fx-ccmm-text-on-remote-light; }
 .remote-chip-8 { -fx-background-color: -fx-ccmm-remote-8; -fx-text-fill: -fx-ccmm-text-on-remote-light; }
+
+/* Selection token at 50% over surface-0 (blend of -fx-ccmm-selection onto -fx-ccmm-surface-0). */
+.bracket-match {
+    -rtfx-background-color: #E3F0FA;
+}
