@@ -623,7 +623,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #72
       pr:         #144
 
-- [ ] E2-T05 Go to a line
+- [x] E2-T05 Go to a line
       why:        Metrics and problems cite line numbers.
       scope:      ccmm-app editor
       depends on: E2-T01, E1-T07
@@ -632,6 +632,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       S
       kind:       ui
       issue:      #73
+      pr:         #145
 
 - [ ] E2-T06 Match brackets
       why:        A complexity editor should show which brace belongs to the caret.
