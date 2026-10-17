@@ -9,6 +9,7 @@ public final class SideViews {
     private final StackPane host = new StackPane();
     private Node explorer;
     private Node settings;
+    private Node outline;
     private String folderName;
 
     public SideViews() {
@@ -25,6 +26,10 @@ public final class SideViews {
 
     public void setSettings(Node settings) {
         this.settings = settings;
+    }
+
+    public void setOutline(Node outline) {
+        this.outline = outline;
     }
 
     public void setFolderName(String folderName) {
@@ -45,6 +50,9 @@ public final class SideViews {
         }
         if (view == ActivityView.SETTINGS) {
             return settings == null ? label(emptyCopy(ActivityView.SETTINGS), "settings") : settings;
+        }
+        if (view == ActivityView.OUTLINE) {
+            return outline == null ? label(emptyCopy(ActivityView.OUTLINE), "outline") : outline;
         }
         return label(emptyCopy(view), view.name().toLowerCase());
     }
