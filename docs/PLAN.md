@@ -654,7 +654,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #75
-      pr:         #TBD
+      pr:         #147
 
 - [ ] E2-T08 Show encoding and line endings
       why:        The status bar has slots and the file's ending is invisible.
