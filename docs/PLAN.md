@@ -668,7 +668,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #76
       pr:         #148
 
-- [ ] E2-T09 Add large-file mode
+- [x] E2-T09 Add large-file mode
       why:        A 5 MB file must not run highlighting or JavaParser on every pause.
       scope:      ccmm-app document
       depends on: E2-T01
@@ -677,6 +677,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #77
+      pr:         #TBD
 
 - [ ] E2-T10 Fold regions the bake-off allows
       why:        Long methods are the thing this IDE is about, and folding makes them readable.
