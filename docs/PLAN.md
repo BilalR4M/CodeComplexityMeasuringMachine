@@ -665,7 +665,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #76
-      pr:         #TBD
+      pr:         #148
 
 - [ ] E2-T09 Add large-file mode
       why:        A 5 MB file must not run highlighting or JavaParser on every pause.
