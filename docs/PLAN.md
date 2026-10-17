@@ -591,7 +591,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #69
       pr:         #141
 
-- [ ] E2-T02 Add a tab strip
+- [x] E2-T02 Add a tab strip
       why:        One buffer cannot show the files a review touches.
       scope:      ccmm-app editor tabs
       depends on: E1-T01, E2-T01
@@ -600,6 +600,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       ui
       issue:      #70
+      pr:         #143
 
 - [ ] E2-T03 Highlight the open buffer
       why:        Plain text does not look like an editor, and non-Java files are unreadable today.
