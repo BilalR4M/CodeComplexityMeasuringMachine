@@ -600,7 +600,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       ui
       issue:      #70
-      pr:         pending
+      pr:         #143
 
 - [ ] E2-T03 Highlight the open buffer
       why:        Plain text does not look like an editor, and non-Java files are unreadable today.
