@@ -733,7 +733,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #82
-      pr:         #TBD
+      pr:         #153
 
 - [ ] E3-T05 Show breadcrumbs
       why:        The path and the method at the caret should sit above the editor.
