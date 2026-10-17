@@ -724,7 +724,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       kind:       ui
       issue:      #81
 
-- [ ] E3-T04 Show the file outline
+- [x] E3-T04 Show the file outline
       why:        Methods are the unit of complexity and the tree does not list them.
       scope:      ccmm-app outline
       depends on: E1-T02, E2-T01
@@ -733,6 +733,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #82
+      pr:         #153
 
 - [ ] E3-T05 Show breadcrumbs
       why:        The path and the method at the caret should sit above the editor.

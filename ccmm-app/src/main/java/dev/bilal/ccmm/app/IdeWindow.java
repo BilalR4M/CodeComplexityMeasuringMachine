@@ -79,6 +79,7 @@ public final class IdeWindow {
     private final SuspendableYes localUndo = new SuspendableYes();
     private final List<Message> remotePending = new ArrayList<>();
     private final MetricsPanel panel = new MetricsPanel();
+    private final OutlineView outlineView = new OutlineView();
     private final ProjectRoomPanel room = new ProjectRoomPanel();
     private final Workbench workbench = new Workbench();
     private final ActivityBar activityBar = new ActivityBar();
@@ -236,6 +237,8 @@ public final class IdeWindow {
         workbench.setMenuBar(new MenuBar(file));
         sideViews.setExplorer(tree);
         sideViews.setSettings(settingsPanel.root());
+        sideViews.setOutline(outlineView.root());
+        outlineView.setOnGoToLine(this::jumpToOutlineLine);
         sideViews.show(ActivityView.EXPLORER);
         sideBar.setContent(sideViews.host());
         sideBar.setActiveView(ActivityView.EXPLORER);
@@ -370,6 +373,10 @@ public final class IdeWindow {
 
     public CommandPalette commandPalette() {
         return commandPalette;
+    }
+
+    public OutlineView outlineView() {
+        return outlineView;
     }
 
     public SettingsStore settingsStore() {
@@ -634,7 +641,9 @@ public final class IdeWindow {
                 syncingEditor = false;
             }
             lastGood = null;
+            latest = null;
             panel.showUnparsed("");
+            refreshOutline();
             tabStrip.refresh();
             updateCaretStatus();
             updateLargeFileBanner();
@@ -643,6 +652,7 @@ public final class IdeWindow {
         }
         if (document == null || !document.relativePath().equals(tab.relativePath())) {
             lastGood = null;
+            latest = null;
             panel.showUnparsed("");
         }
         document = tab.document();
@@ -659,6 +669,7 @@ public final class IdeWindow {
             enterLargeFileMode();
         } else {
             updateLargeFileBanner();
+            refreshOutline();
             scheduleAnalysis(document.text());
             scheduleHighlight();
         }
@@ -776,6 +787,32 @@ public final class IdeWindow {
         panel.showUnparsed("");
         paintEditorStyles();
         updateLargeFileBanner();
+        refreshOutline();
+    }
+
+    private void refreshOutline() {
+        if (document == null) {
+            outlineView.showNoDocument();
+            return;
+        }
+        if (document.largeFile() || !Document.isJavaPath(document.relativePath())) {
+            outlineView.showNoOutline();
+            return;
+        }
+        if (lastGood != null && lastGood.relativePath().equals(document.relativePath())) {
+            outlineView.showMethods(lastGood.file().methods());
+            return;
+        }
+        outlineView.showAnalyzing();
+    }
+
+    private void jumpToOutlineLine(int startLine) {
+        int lineCount = Math.max(1, editor.getParagraphs().size());
+        GoToLine.Target target = GoToLine.clamp(Math.max(1, startLine), lineCount);
+        editor.moveTo(target.line() - 1, 0);
+        editor.requestFollowCaret();
+        editor.requestFocus();
+        workbench.setStatus("");
     }
 
     private void updateLargeFileBanner() {
@@ -805,6 +842,7 @@ public final class IdeWindow {
                     }
                 }
             }
+            refreshOutline();
         }
         onAnalyzed.run();
     }
