@@ -33,3 +33,16 @@ E0-T02. Spike sources live under `spikes/e0-t02/` and are not on the app classpa
 go
 
 Regex lexers meet the go thresholds. Keep ADR-0009's recommendation. Do not add tm4e or tree-sitter to `ccmm-app` from this spike.
+
+## Product path (E2-T03)
+
+`RegexJavaHighlighter` + `HighlightScheduler` live in `ccmm-app` and paint the open Java buffer via RichTextFX style classes. Lexer work stays off the FX thread; style paint is one FX pass and is skipped when there are no tokens or brackets.
+
+- OS: Windows 11 amd64
+- Command: `CCMM_KEYSTROKE=true mvn -B -ntp -pl ccmm-app -am test -Dtest=KeystrokeLatencyHarness,KeystrokeReportTest`
+- Buffer: 10000 lines (editor harness after highlight landed)
+- Keystroke p95: 3.163 ms (see `docs/benchmarks/keystroke-latency.md` Editor section)
+- Spike keystroke p95 with highlighting on: 0.984 ms
+- Budget: under 16 ms
+
+go

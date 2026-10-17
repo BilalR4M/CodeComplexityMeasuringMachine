@@ -28,6 +28,11 @@ Contrast ratios were computed on 2026-10-14 with the WCAG relative-luminance for
 | `diff-remove` | `#6F2C33` | removed line fill |
 | `text-on-remote-light` | `#FFFFFF` | label on a dark swatch |
 | `text-on-remote-dark` | `#1A1A1A` | label on a light swatch |
+| `syntax-keyword` | `#4CC2FF` | Java keyword fill |
+| `syntax-string` | `#E6B450` | string / char literal |
+| `syntax-comment` | `#8A8A8A` | line and block comment |
+| `syntax-number` | `#3DDC97` | numeric literal |
+| `syntax-identifier` | `#E8E8E8` | plain identifier |
 
 ### Light
 
@@ -47,6 +52,11 @@ Contrast ratios were computed on 2026-10-14 with the WCAG relative-luminance for
 | `selection` | `#C7E0F4` | editor selection fill |
 | `diff-add` | `#D8F3DC` | added line fill |
 | `diff-remove` | `#F8D7DA` | removed line fill |
+| `syntax-keyword` | `#005A9E` | Java keyword fill |
+| `syntax-string` | `#8A5A00` | string / char literal |
+| `syntax-comment` | `#767676` | line and block comment |
+| `syntax-number` | `#0F7B3A` | numeric literal |
+| `syntax-identifier` | `#1E1E1E` | plain identifier |
 
 `text-disabled` is for inactive controls only. Essential information uses `text-secondary` or stronger.
 

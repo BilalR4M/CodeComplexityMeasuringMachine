@@ -11,6 +11,8 @@ import dev.bilal.ccmm.app.editor.EditorTabs;
 import dev.bilal.ccmm.app.editor.FindReplaceBar;
 import dev.bilal.ccmm.app.editor.GoToLine;
 import dev.bilal.ccmm.app.editor.GoToLineBar;
+import dev.bilal.ccmm.app.editor.HighlightScheduler;
+import dev.bilal.ccmm.app.editor.HighlightSpan;
 import dev.bilal.ccmm.app.editor.OpenTab;
 import dev.bilal.ccmm.app.editor.SaveClosePrompt;
 import dev.bilal.ccmm.app.editor.TabStrip;
@@ -40,6 +42,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -60,12 +63,14 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.richtext.util.UndoUtils;
 import org.reactfx.SuspendableYes;
 
 public final class IdeWindow {
     private final FileTreeController files = new FileTreeController();
     private final AnalysisScheduler analysis;
+    private final HighlightScheduler highlight = new HighlightScheduler(Platform::runLater);
     private final TreeView<FileNode> tree = new TreeView<>();
     private final CodeArea editor = new CodeArea();
     private final SuspendableYes localUndo = new SuspendableYes();
@@ -107,9 +112,11 @@ public final class IdeWindow {
     private List<BufferFinder.Match> findMatches = List.of();
     private int findIndex = -1;
     private int findGeneration;
+    private boolean stylesPainted;
     private int bracketOpen = -1;
     private int bracketClose = -1;
     private int bracketGeneration;
+    private List<HighlightSpan> highlightSpans = List.of();
 
     public IdeWindow() {
         this(AnalysisScheduler.QUIET_MILLIS, DirectoryPrompt.chooser(), SettingsStore.defaultDirectory());
@@ -238,6 +245,7 @@ public final class IdeWindow {
         editor.textProperty().addListener((obs, previous, text) -> {
             syncDocumentFromEditor(text);
             scheduleAnalysis(text);
+            scheduleHighlight();
             scheduleBracketMatch();
         });
         editor.caretPositionProperty().addListener((obs, previous, current) -> {
@@ -275,6 +283,10 @@ public final class IdeWindow {
     /** Inclusive indices of the highlighted bracket pair, or [-1, -1] when clear. */
     int[] bracketHighlight() {
         return new int[] {bracketOpen, bracketClose};
+    }
+
+    List<HighlightSpan> highlightSpans() {
+        return highlightSpans;
     }
 
     public SessionStore sessionStore() {
@@ -407,6 +419,7 @@ public final class IdeWindow {
         backgroundIo.shutdown();
         files.close();
         analysis.close();
+        highlight.close();
     }
 
     void applyRemote(List<Message> messages) {
@@ -597,6 +610,8 @@ public final class IdeWindow {
         updateCaretStatus();
         updateFileEncodingStatus();
         scheduleAnalysis(document.text());
+        scheduleHighlight();
+        scheduleBracketMatch();
     }
 
     private void requestCloseTab(int index) {
@@ -951,26 +966,79 @@ public final class IdeWindow {
     }
 
     private void applyBracketHighlight(Optional<BracketMatcher.Match> match) {
-        clearBracketHighlight();
         if (match.isEmpty()) {
-            return;
+            bracketOpen = -1;
+            bracketClose = -1;
+        } else {
+            BracketMatcher.Match found = match.get();
+            bracketOpen = found.open();
+            bracketClose = found.close();
         }
-        BracketMatcher.Match found = match.get();
-        editor.setStyleClass(found.open(), found.open() + 1, "bracket-match");
-        editor.setStyleClass(found.close(), found.close() + 1, "bracket-match");
-        bracketOpen = found.open();
-        bracketClose = found.close();
+        paintEditorStyles();
     }
 
-    private void clearBracketHighlight() {
-        if (bracketOpen >= 0 && bracketOpen < editor.getLength()) {
-            editor.clearStyle(bracketOpen, Math.min(bracketOpen + 1, editor.getLength()));
+    private void scheduleHighlight() {
+        if (document == null || !Document.isJavaPath(document.relativePath())) {
+            highlightSpans = List.of();
+            paintEditorStyles();
+            return;
         }
-        if (bracketClose >= 0 && bracketClose < editor.getLength()) {
-            editor.clearStyle(bracketClose, Math.min(bracketClose + 1, editor.getLength()));
+        String path = document.relativePath();
+        String text = editor.getText();
+        highlight.schedule(text, path, spans -> {
+            highlightSpans = spans;
+            paintEditorStyles();
+        });
+    }
+
+    private void paintEditorStyles() {
+        String text = editor.getText();
+        if (text.isEmpty()) {
+            stylesPainted = false;
+            return;
         }
-        bracketOpen = -1;
-        bracketClose = -1;
+        boolean hasTokens = !highlightSpans.isEmpty();
+        boolean hasBrackets = bracketOpen >= 0 || bracketClose >= 0;
+        // Rewriting StyleSpans on a 10k-line buffer is expensive; skip when idle.
+        if (!hasTokens && !hasBrackets) {
+            if (stylesPainted) {
+                localUndo.suspendWhile(() -> editor.clearStyle(0, text.length()));
+                stylesPainted = false;
+            }
+            return;
+        }
+        StyleSpansBuilder<Collection<String>> builder = new StyleSpansBuilder<>();
+        int last = 0;
+        for (HighlightSpan span : highlightSpans) {
+            if (span.start() >= text.length()) {
+                break;
+            }
+            int end = Math.min(span.end(), text.length());
+            if (span.start() < last) {
+                continue;
+            }
+            if (span.start() > last) {
+                builder.add(List.of(), span.start() - last);
+            }
+            builder.add(List.of("token-" + span.token()), end - span.start());
+            last = end;
+        }
+        if (last < text.length()) {
+            builder.add(List.of(), text.length() - last);
+        } else if (last == 0) {
+            builder.add(List.of(), text.length());
+        }
+        // Style-only edits must not push undo entries (local-only undo rule).
+        localUndo.suspendWhile(() -> {
+            editor.setStyleSpans(0, builder.create());
+            if (bracketOpen >= 0 && bracketOpen < text.length()) {
+                editor.setStyleClass(bracketOpen, Math.min(bracketOpen + 1, text.length()), "bracket-match");
+            }
+            if (bracketClose >= 0 && bracketClose < text.length()) {
+                editor.setStyleClass(bracketClose, Math.min(bracketClose + 1, text.length()), "bracket-match");
+            }
+        });
+        stylesPainted = true;
     }
 
     /** Local Enter only — remote newlines arrive via replaceText and skip this path. */

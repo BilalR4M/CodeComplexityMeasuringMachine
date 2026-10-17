@@ -19,7 +19,7 @@ Fresh p95 for the editor `CodeArea`, after a 10000-line buffer was on screen.
 - Command: `CCMM_KEYSTROKE=true mvn -B -ntp -pl ccmm-app -am test -Dtest=KeystrokeLatencyHarness,KeystrokeReportTest`
 - Buffer: 10000 lines
 - Samples: 200 single-character inserts
-- p95: 1.245 ms
-- memory: 302.6 MB committed
+- p95: 3.163 ms
+- memory: 329.7 MB committed
 
 go

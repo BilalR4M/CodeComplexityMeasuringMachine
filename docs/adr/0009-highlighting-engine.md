@@ -1,5 +1,5 @@
 # ADR-0009: Highlighting engine
-Status: proposed
+Status: accepted
 
 ## Context
 The editor shows plain text. ADR-0010 recommends opening any text file and highlighting a fixed set of languages. Metrics stay on JavaParser. Highlighting must not run on the JavaFX thread and must not stall a keystroke. Helix issue 15619 (linked from `docs/design/REFERENCE_SURVEY.md`) is a case where a syntax parser did stall insert mode.
@@ -18,4 +18,7 @@ Go for regex lexers when a full highlight of the 10,000-line file finishes under
 E2-T03 implements whichever engine this ADR names after the spike. Unsupported files open as plain text. A parse or highlight failure never clears the buffer.
 
 ## Measured result (E0-T02, 2026-10-16)
-`docs/benchmarks/highlighting.md` ends with **go** for the cancellable regex Java lexer (10k highlight under 50 ms, keystroke p95 under 16 ms with highlighting enabled, latest-wins cancel yes). tm4e and tree-sitter were not on the spike classpath and were not measured; EPL-2.0 still blocks tm4e until the owner accepts it. This ADR stays **proposed** until the owner accepts it.
+`docs/benchmarks/highlighting.md` ends with **go** for the cancellable regex Java lexer (10k highlight under 50 ms, keystroke p95 under 16 ms with highlighting enabled, latest-wins cancel yes). tm4e and tree-sitter were not on the spike classpath and were not measured; EPL-2.0 still blocks tm4e until the owner accepts it.
+
+## Decision (2026-10-17)
+Accepted: cancellable regex lexers for the fixed language set. No tm4e, no tree-sitter in v1. E2-T03 implements the product path.
