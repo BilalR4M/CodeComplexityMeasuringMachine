@@ -5,6 +5,8 @@ import dev.bilal.ccmm.app.document.EditOrigin;
 import dev.bilal.ccmm.app.editor.BufferFinder;
 import dev.bilal.ccmm.app.editor.EditorTabs;
 import dev.bilal.ccmm.app.editor.FindReplaceBar;
+import dev.bilal.ccmm.app.editor.GoToLine;
+import dev.bilal.ccmm.app.editor.GoToLineBar;
 import dev.bilal.ccmm.app.editor.OpenTab;
 import dev.bilal.ccmm.app.editor.SaveClosePrompt;
 import dev.bilal.ccmm.app.editor.TabStrip;
@@ -36,6 +38,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.application.Platform;
@@ -71,6 +74,7 @@ public final class IdeWindow {
     private final EditorTabs editorTabs = new EditorTabs();
     private final TabStrip tabStrip = new TabStrip(editorTabs);
     private final FindReplaceBar findReplaceBar = new FindReplaceBar();
+    private final GoToLineBar goToLineBar = new GoToLineBar();
     private final SettingsStore settingsStore;
     private final SettingsPanel settingsPanel;
     private final SessionStore sessionStore;
@@ -211,7 +215,9 @@ public final class IdeWindow {
         findReplaceBar.setOnReplaceAll(this::replaceAllMatches);
         findReplaceBar.setOnClose(findReplaceBar::hide);
         findReplaceBar.setOnQueryChanged(query -> scheduleFind(query, findReplaceBar.matchCase()));
-        VBox editorStack = new VBox(tabStrip.root(), findReplaceBar.root(), editor);
+        goToLineBar.setOnGo(this::goToLine);
+        goToLineBar.setOnClose(goToLineBar::hide);
+        VBox editorStack = new VBox(tabStrip.root(), findReplaceBar.root(), goToLineBar.root(), editor);
         VBox.setVgrow(editor, Priority.ALWAYS);
         workbench.setContent(RegionId.ACTIVITY, activityBar);
         workbench.setContent(RegionId.SIDE, sideBar);
@@ -246,6 +252,10 @@ public final class IdeWindow {
 
     public FindReplaceBar findReplaceBar() {
         return findReplaceBar;
+    }
+
+    public GoToLineBar goToLineBar() {
+        return goToLineBar;
     }
 
     public SessionStore sessionStore() {
@@ -684,6 +694,7 @@ public final class IdeWindow {
         workbench.register(new SimpleCommand(CommandId.REOPEN_TAB, "Reopen Closed Tab", wb -> reopenClosedTab()));
         workbench.register(new SimpleCommand(CommandId.FIND, "Find", wb -> findReplaceBar.show(false)));
         workbench.register(new SimpleCommand(CommandId.REPLACE, "Replace", wb -> findReplaceBar.show(true)));
+        workbench.register(new SimpleCommand(CommandId.GO_TO_LINE, GoToLineBar.TITLE, wb -> goToLineBar.show()));
     }
 
     private void scheduleFind(String query, boolean matchCase) {
@@ -836,6 +847,23 @@ public final class IdeWindow {
                 workbench.setStatus("Replaced " + matches.size());
             });
         });
+    }
+
+    private void goToLine(String input) {
+        OptionalInt parsed = GoToLine.parse(input);
+        if (parsed.isEmpty()) {
+            return;
+        }
+        int lineCount = Math.max(1, editor.getParagraphs().size());
+        GoToLine.Target target = GoToLine.clamp(parsed.getAsInt(), lineCount);
+        editor.moveTo(target.line() - 1, 0);
+        editor.requestFollowCaret();
+        if (target.pastEnd()) {
+            workbench.setStatus(GoToLine.pastEndMessage(target.requested()));
+        } else {
+            workbench.setStatus("");
+        }
+        goToLineBar.hide();
     }
 
     private void toggleSideBar() {
