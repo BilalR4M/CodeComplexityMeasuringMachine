@@ -656,7 +656,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #75
       pr:         #147
 
-- [ ] E2-T08 Show encoding and line endings
+- [x] E2-T08 Show encoding and line endings
       why:        The status bar has slots and the file's ending is invisible.
       scope:      ccmm-app document
       depends on: E1-T05, E2-T01
@@ -665,6 +665,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #76
+      pr:         #TBD
 
 - [ ] E2-T09 Add large-file mode
       why:        A 5 MB file must not run highlighting or JavaParser on every pause.

@@ -2,6 +2,8 @@ package dev.bilal.ccmm.app;
 
 import dev.bilal.ccmm.app.document.Document;
 import dev.bilal.ccmm.app.document.EditOrigin;
+import dev.bilal.ccmm.app.document.LineEnding;
+import dev.bilal.ccmm.app.document.Utf8Text;
 import dev.bilal.ccmm.app.editor.AutoIndent;
 import dev.bilal.ccmm.app.editor.BracketMatcher;
 import dev.bilal.ccmm.app.editor.BufferFinder;
@@ -245,6 +247,7 @@ public final class IdeWindow {
         });
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
         editor.addEventFilter(KeyEvent.KEY_PRESSED, this::onEditorKeyPressed);
+        workbench.statusBar().setOnLineEndingChosen(this::chooseLineEnding);
         updateCaretStatus();
         tabStrip.refresh();
     }
@@ -438,11 +441,20 @@ public final class IdeWindow {
             return;
         }
         int ticket = ++openGeneration;
-        files.read(file, text -> Platform.runLater(() -> {
-            if (ticket != openGeneration || text == null) {
+        String fileName = file.getFileName().toString();
+        files.read(file, result -> Platform.runLater(() -> {
+            if (ticket != openGeneration) {
                 return;
             }
-            Document opened = new Document(next, text);
+            if (result instanceof FileTreeController.FileRead.BadUtf8) {
+                workbench.setStatus(Utf8Text.couldNotReadMessage(fileName));
+                return;
+            }
+            if (!(result instanceof FileTreeController.FileRead.Ok ok)) {
+                workbench.setStatus("Could not read " + fileName);
+                return;
+            }
+            Document opened = new Document(next, ok.text(), ok.lineEnding());
             if (pin) {
                 editorTabs.openPinned(opened);
             } else {
@@ -567,6 +579,7 @@ public final class IdeWindow {
             panel.showUnparsed("");
             tabStrip.refresh();
             updateCaretStatus();
+            workbench.statusBar().clearFileEncoding();
             return;
         }
         if (document == null || !document.relativePath().equals(tab.relativePath())) {
@@ -582,6 +595,7 @@ public final class IdeWindow {
         }
         tabStrip.refresh();
         updateCaretStatus();
+        updateFileEncodingStatus();
         scheduleAnalysis(document.text());
     }
 
@@ -615,29 +629,58 @@ public final class IdeWindow {
     }
 
     private void saveActiveThenClose() {
+        saveActiveDocument(() -> {
+            editorTabs.closeActive();
+            showActiveTab();
+            persistSession();
+        });
+    }
+
+    /** Saves the active document with its chosen line ending as UTF-8. */
+    void saveActiveDocument(Runnable afterSuccess) {
         OpenTab tab = editorTabs.active().orElse(null);
         if (tab == null || projectRoot == null) {
             return;
         }
         String relative = tab.relativePath();
-        String text = tab.document().text();
+        String diskText = tab.document().diskText();
         String fileName = tab.fileName();
         Path file = projectRoot.resolve(relative);
         backgroundIo.execute(() -> {
             try {
-                Files.writeString(file, text, StandardCharsets.UTF_8);
+                Files.writeString(file, diskText, StandardCharsets.UTF_8);
                 Platform.runLater(() -> {
                     if (document != null && document.relativePath().equals(relative)) {
                         document.markSaved();
+                        tabStrip.refresh();
+                        updateFileEncodingStatus();
                     }
-                    editorTabs.closeActive();
-                    showActiveTab();
-                    persistSession();
+                    if (afterSuccess != null) {
+                        afterSuccess.run();
+                    }
                 });
             } catch (IOException failure) {
                 Platform.runLater(() -> workbench.setStatus("Could not save " + fileName));
             }
         });
+    }
+
+    private void chooseLineEnding(LineEnding ending) {
+        if (document == null) {
+            return;
+        }
+        document.setLineEnding(ending);
+        tabStrip.refresh();
+        updateFileEncodingStatus();
+        persistSession();
+    }
+
+    private void updateFileEncodingStatus() {
+        if (document == null) {
+            workbench.statusBar().clearFileEncoding();
+            return;
+        }
+        workbench.statusBar().showFileEncoding(document.lineEnding(), Utf8Text.ENCODING_LABEL);
     }
 
     private void reopenClosedTab() {
@@ -686,6 +729,9 @@ public final class IdeWindow {
 
     private void updateCaretStatus() {
         workbench.statusBar().setCaret(caretLine(), editor.getCaretColumn() + 1);
+        if (document != null) {
+            updateFileEncodingStatus();
+        }
     }
 
     private String relative(Path file) {
