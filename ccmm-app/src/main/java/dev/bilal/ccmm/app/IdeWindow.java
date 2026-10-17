@@ -2,7 +2,9 @@ package dev.bilal.ccmm.app;
 
 import dev.bilal.ccmm.app.document.Document;
 import dev.bilal.ccmm.app.document.EditOrigin;
+import dev.bilal.ccmm.app.editor.BufferFinder;
 import dev.bilal.ccmm.app.editor.EditorTabs;
+import dev.bilal.ccmm.app.editor.FindReplaceBar;
 import dev.bilal.ccmm.app.editor.OpenTab;
 import dev.bilal.ccmm.app.editor.SaveClosePrompt;
 import dev.bilal.ccmm.app.editor.TabStrip;
@@ -68,6 +70,7 @@ public final class IdeWindow {
     private final Keymap keymap = Keymap.seeded(Keymap.detectPlatform());
     private final EditorTabs editorTabs = new EditorTabs();
     private final TabStrip tabStrip = new TabStrip(editorTabs);
+    private final FindReplaceBar findReplaceBar = new FindReplaceBar();
     private final SettingsStore settingsStore;
     private final SettingsPanel settingsPanel;
     private final SessionStore sessionStore;
@@ -90,6 +93,9 @@ public final class IdeWindow {
     private boolean remoteFlushScheduled;
     private boolean syncingEditor;
     private boolean welcome = true;
+    private List<BufferFinder.Match> findMatches = List.of();
+    private int findIndex = -1;
+    private int findGeneration;
 
     public IdeWindow() {
         this(AnalysisScheduler.QUIET_MILLIS, DirectoryPrompt.chooser(), SettingsStore.defaultDirectory());
@@ -199,7 +205,13 @@ public final class IdeWindow {
         });
         tabStrip.setOnSelect(this::activateTab);
         tabStrip.setOnClose(this::requestCloseTab);
-        VBox editorStack = new VBox(tabStrip.root(), editor);
+        findReplaceBar.setOnNext(this::findNext);
+        findReplaceBar.setOnPrevious(this::findPrevious);
+        findReplaceBar.setOnReplace(this::replaceCurrent);
+        findReplaceBar.setOnReplaceAll(this::replaceAllMatches);
+        findReplaceBar.setOnClose(findReplaceBar::hide);
+        findReplaceBar.setOnQueryChanged(query -> scheduleFind(query, findReplaceBar.matchCase()));
+        VBox editorStack = new VBox(tabStrip.root(), findReplaceBar.root(), editor);
         VBox.setVgrow(editor, Priority.ALWAYS);
         workbench.setContent(RegionId.ACTIVITY, activityBar);
         workbench.setContent(RegionId.SIDE, sideBar);
@@ -230,6 +242,10 @@ public final class IdeWindow {
 
     public TabStrip tabStrip() {
         return tabStrip;
+    }
+
+    public FindReplaceBar findReplaceBar() {
+        return findReplaceBar;
     }
 
     public SessionStore sessionStore() {
@@ -666,6 +682,160 @@ public final class IdeWindow {
                 CommandId.VIEW_SETTINGS, "Settings", wb -> activityBar.select(ActivityView.SETTINGS)));
         workbench.register(new SimpleCommand(CommandId.CLOSE_TAB, "Close Tab", wb -> closeActiveTab()));
         workbench.register(new SimpleCommand(CommandId.REOPEN_TAB, "Reopen Closed Tab", wb -> reopenClosedTab()));
+        workbench.register(new SimpleCommand(CommandId.FIND, "Find", wb -> findReplaceBar.show(false)));
+        workbench.register(new SimpleCommand(CommandId.REPLACE, "Replace", wb -> findReplaceBar.show(true)));
+    }
+
+    private void scheduleFind(String query, boolean matchCase) {
+        String text = document == null ? "" : document.text();
+        int ticket = ++findGeneration;
+        backgroundIo.execute(() -> {
+            List<BufferFinder.Match> matches = BufferFinder.findAll(text, query, matchCase);
+            Platform.runLater(() -> {
+                if (ticket != findGeneration) {
+                    return;
+                }
+                findMatches = matches;
+                findIndex = -1;
+                if (query == null || query.isEmpty()) {
+                    return;
+                }
+                if (matches.isEmpty()) {
+                    workbench.setStatus(FindReplaceBar.NO_MATCHES);
+                } else {
+                    workbench.setStatus("");
+                }
+            });
+        });
+    }
+
+    private void findNext() {
+        if (findMatches.isEmpty()) {
+            scheduleFindAndSelect(true);
+            return;
+        }
+        int caret = editor.getCaretPosition();
+        if (findIndex >= 0 && findIndex < findMatches.size()) {
+            caret = findMatches.get(findIndex).end();
+        }
+        findIndex = BufferFinder.nextIndex(findMatches, caret);
+        selectFindMatch();
+    }
+
+    private void findPrevious() {
+        if (findMatches.isEmpty()) {
+            scheduleFindAndSelect(false);
+            return;
+        }
+        int caret = editor.getCaretPosition();
+        if (findIndex >= 0 && findIndex < findMatches.size()) {
+            caret = findMatches.get(findIndex).start();
+        }
+        findIndex = BufferFinder.previousIndex(findMatches, caret);
+        selectFindMatch();
+    }
+
+    private void scheduleFindAndSelect(boolean forward) {
+        String query = findReplaceBar.findField().getText();
+        boolean matchCase = findReplaceBar.matchCase();
+        String text = document == null ? "" : document.text();
+        int ticket = ++findGeneration;
+        int caret = editor.getCaretPosition();
+        backgroundIo.execute(() -> {
+            List<BufferFinder.Match> matches = BufferFinder.findAll(text, query, matchCase);
+            Platform.runLater(() -> {
+                if (ticket != findGeneration) {
+                    return;
+                }
+                findMatches = matches;
+                if (matches.isEmpty()) {
+                    findIndex = -1;
+                    if (query != null && !query.isEmpty()) {
+                        workbench.setStatus(FindReplaceBar.NO_MATCHES);
+                    }
+                    return;
+                }
+                findIndex = forward
+                        ? BufferFinder.nextIndex(matches, caret)
+                        : BufferFinder.previousIndex(matches, caret);
+                selectFindMatch();
+            });
+        });
+    }
+
+    private void selectFindMatch() {
+        if (findIndex < 0 || findIndex >= findMatches.size()) {
+            return;
+        }
+        BufferFinder.Match match = findMatches.get(findIndex);
+        editor.selectRange(match.start(), match.end());
+        workbench.setStatus("");
+    }
+
+    private void replaceCurrent() {
+        if (document == null) {
+            return;
+        }
+        String query = findReplaceBar.findField().getText();
+        if (query == null || query.isEmpty()) {
+            return;
+        }
+        String replacement = findReplaceBar.replaceField().getText();
+        if (replacement == null) {
+            replacement = "";
+        }
+        if (findIndex < 0 || findIndex >= findMatches.size()) {
+            findNext();
+            return;
+        }
+        BufferFinder.Match match = findMatches.get(findIndex);
+        String selected = editor.getSelectedText();
+        boolean same = findReplaceBar.matchCase()
+                ? query.equals(selected)
+                : query.equalsIgnoreCase(selected);
+        if (!same) {
+            findNext();
+            return;
+        }
+        editor.replaceText(match.start(), match.end(), replacement);
+        scheduleFind(query, findReplaceBar.matchCase());
+        Platform.runLater(this::findNext);
+    }
+
+    private void replaceAllMatches() {
+        if (document == null) {
+            return;
+        }
+        String query = findReplaceBar.findField().getText();
+        if (query == null || query.isEmpty()) {
+            return;
+        }
+        String replacement = findReplaceBar.replaceField().getText();
+        if (replacement == null) {
+            replacement = "";
+        }
+        boolean matchCase = findReplaceBar.matchCase();
+        String text = document.text();
+        int ticket = ++findGeneration;
+        String insert = replacement;
+        backgroundIo.execute(() -> {
+            List<BufferFinder.Match> matches = BufferFinder.findAll(text, query, matchCase);
+            String updated = BufferFinder.replaceAll(text, query, insert, matchCase);
+            Platform.runLater(() -> {
+                if (ticket != findGeneration) {
+                    return;
+                }
+                if (matches.isEmpty()) {
+                    workbench.setStatus(FindReplaceBar.NO_MATCHES);
+                    return;
+                }
+                // One buffer replace → one undo step.
+                editor.replaceText(updated);
+                findMatches = List.of();
+                findIndex = -1;
+                workbench.setStatus("Replaced " + matches.size());
+            });
+        });
     }
 
     private void toggleSideBar() {
