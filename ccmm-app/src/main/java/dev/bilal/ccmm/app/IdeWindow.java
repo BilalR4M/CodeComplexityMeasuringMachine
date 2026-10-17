@@ -2,6 +2,7 @@ package dev.bilal.ccmm.app;
 
 import dev.bilal.ccmm.app.document.Document;
 import dev.bilal.ccmm.app.document.EditOrigin;
+import dev.bilal.ccmm.app.editor.AutoIndent;
 import dev.bilal.ccmm.app.editor.BracketMatcher;
 import dev.bilal.ccmm.app.editor.BufferFinder;
 import dev.bilal.ccmm.app.editor.EditorTabs;
@@ -51,6 +52,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -241,6 +244,7 @@ public final class IdeWindow {
             scheduleBracketMatch();
         });
         editor.setUndoManager(UndoUtils.richTextSuspendableUndoManager(editor, localUndo));
+        editor.addEventFilter(KeyEvent.KEY_PRESSED, this::onEditorKeyPressed);
         updateCaretStatus();
         tabStrip.refresh();
     }
@@ -921,6 +925,24 @@ public final class IdeWindow {
         }
         bracketOpen = -1;
         bracketClose = -1;
+    }
+
+    /** Local Enter only — remote newlines arrive via replaceText and skip this path. */
+    private void onEditorKeyPressed(KeyEvent event) {
+        if (event.getCode() != KeyCode.ENTER
+                || event.isShiftDown()
+                || event.isControlDown()
+                || event.isAltDown()
+                || event.isMetaDown()) {
+            return;
+        }
+        int from = editor.getSelection().getStart();
+        int to = editor.getSelection().getEnd();
+        String text = editor.getText();
+        int lineStart = from == 0 ? 0 : text.lastIndexOf('\n', from - 1) + 1;
+        String lineBeforeCaret = text.substring(lineStart, from);
+        editor.replaceText(from, to, AutoIndent.insertion(lineBeforeCaret));
+        event.consume();
     }
 
     private void toggleSideBar() {

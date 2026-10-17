@@ -645,7 +645,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #74
       pr:         #146
 
-- [ ] E2-T07 Auto-indent the next line
+- [x] E2-T07 Auto-indent the next line
       why:        Enter should keep the indent of Java code.
       scope:      ccmm-app editor
       depends on: E2-T01
@@ -654,6 +654,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       code
       issue:      #75
+      pr:         #147
 
 - [ ] E2-T08 Show encoding and line endings
       why:        The status bar has slots and the file's ending is invisible.
