@@ -735,7 +735,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #82
       pr:         #153
 
-- [ ] E3-T05 Show breadcrumbs
+- [x] E3-T05 Show breadcrumbs
       why:        The path and the method at the caret should sit above the editor.
       scope:      ccmm-app editor
       depends on: E2-T02, E3-T04
@@ -744,6 +744,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       S
       kind:       ui
       issue:      #83
+      pr:         #154
 
 - [ ] E3-T06 Navigate back and forward
       why:        Jumping to a method needs a way back.
