@@ -643,7 +643,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #74
-      pr:         #TBD
+      pr:         #146
 
 - [ ] E2-T07 Auto-indent the next line
       why:        Enter should keep the indent of Java code.
