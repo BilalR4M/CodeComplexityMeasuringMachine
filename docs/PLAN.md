@@ -768,7 +768,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       issue:      #85
       pr:         #156
 
-- [ ] E3-T08 Add the welcome screen
+- [x] E3-T08 Add the welcome screen
       why:        An empty editor does not tell the user what to do.
       scope:      ccmm-app welcome
       depends on: E3-T07, E1-T06
@@ -777,6 +777,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #86
+      pr:         #PENDING
 
 #### E4 — project
 

@@ -53,6 +53,27 @@
     -fx-font-size: 13px;
 }
 
+.welcome-view {
+    -fx-background-color: -fx-ccmm-surface-0;
+}
+
+.welcome-heading {
+    -fx-font-size: 28px;
+    -fx-text-fill: -fx-ccmm-text-primary;
+}
+
+.welcome-section {
+    -fx-text-fill: -fx-ccmm-text-secondary;
+}
+
+.welcome-shortcut {
+    -fx-text-fill: -fx-ccmm-text-secondary;
+}
+
+.welcome-recent-item {
+    -fx-text-fill: -fx-ccmm-accent;
+}
+
 #region-inspector,
 #region-bottom,
 #bottom-panel,

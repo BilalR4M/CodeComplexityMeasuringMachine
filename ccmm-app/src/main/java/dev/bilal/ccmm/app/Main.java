@@ -12,6 +12,8 @@ public final class Main extends Application {
     public void start(Stage stage) {
         window = new IdeWindow();
         stage.setTitle("CCMM IDE");
+        stage.setMinWidth(900);
+        stage.setMinHeight(600);
         stage.setScene(window.scene());
         stage.setOnCloseRequest(event -> window.close());
         stage.show();
