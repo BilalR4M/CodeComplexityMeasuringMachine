@@ -43,6 +43,23 @@ public final class Keymap {
         return Optional.ofNullable(bindings.get(shortcut));
     }
 
+    /** First bound shortcut for a command id, if any. */
+    public Optional<Shortcut> shortcutFor(String commandId) {
+        if (commandId == null || commandId.isBlank()) {
+            return Optional.empty();
+        }
+        for (Map.Entry<Shortcut, String> entry : bindings.entrySet()) {
+            if (commandId.equals(entry.getValue())) {
+                return Optional.of(entry.getKey());
+            }
+        }
+        return Optional.empty();
+    }
+
+    public String shortcutLabel(String commandId) {
+        return shortcutFor(commandId).map(shortcut -> shortcut.label(platform)).orElse("");
+    }
+
     public static Platform detectPlatform() {
         String os = System.getProperty("os.name", "");
         return os.startsWith("Mac") ? Platform.MAC : Platform.OTHER;

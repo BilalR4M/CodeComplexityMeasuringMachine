@@ -703,7 +703,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       kind:       ui
       issue:      #79
 
-- [ ] E3-T02 Add the command palette
+- [x] E3-T02 Add the command palette
       why:        Every command has to be reachable without a menu hunt.
       scope:      ccmm-app navigation
       depends on: E1-T06, E1-T07
@@ -712,6 +712,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #80
+      pr:         #TBD
 
 - [ ] E3-T03 Search the project
       why:        Find in one file is not enough to review a change.
