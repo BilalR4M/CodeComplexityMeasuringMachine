@@ -611,7 +611,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       L
       kind:       ui
       issue:      #71
-      pr:         #TBD
+      pr:         #149
 
 - [x] E2-T04 Find and replace in the buffer
       why:        There is no way to find a word in the open file.
