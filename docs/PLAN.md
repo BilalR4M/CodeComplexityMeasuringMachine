@@ -612,7 +612,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       kind:       ui
       issue:      #71
 
-- [ ] E2-T04 Find and replace in the buffer
+- [x] E2-T04 Find and replace in the buffer
       why:        There is no way to find a word in the open file.
       scope:      ccmm-app editor find
       depends on: E2-T01, E1-T07
@@ -621,6 +621,7 @@ Version 3 adds this program on top of the completed phases above. Ids are `E<epi
       size:       M
       kind:       ui
       issue:      #72
+      pr:         #TBD
 
 - [ ] E2-T05 Go to a line
       why:        Metrics and problems cite line numbers.
