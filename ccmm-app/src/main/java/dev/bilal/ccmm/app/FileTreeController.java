@@ -1,7 +1,9 @@
 package dev.bilal.ccmm.app;
 
+import dev.bilal.ccmm.app.document.LineEnding;
+import dev.bilal.ccmm.app.document.Utf8Text;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.nio.charset.CharacterCodingException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,17 +20,46 @@ final class FileTreeController {
         walker.execute(() -> onWalked.accept(FileNode.tree(directory)));
     }
 
-    void read(Path file, Consumer<String> onRead) {
+    /**
+     * Reads {@code file} as strict UTF-8 off-thread. {@code onRead} receives
+     * {@link FileRead#ok} or {@link FileRead#badUtf8}; IO failures yield
+     * {@link FileRead#ioError}.
+     */
+    void read(Path file, Consumer<FileRead> onRead) {
         walker.execute(() -> {
             try {
-                onRead.accept(Files.readString(file));
+                String text = Utf8Text.read(file);
+                onRead.accept(FileRead.ok(text, LineEnding.detect(text)));
+            } catch (CharacterCodingException badUtf8) {
+                onRead.accept(FileRead.badUtf8());
             } catch (IOException exception) {
-                onRead.accept(null);
+                onRead.accept(FileRead.ioError());
             }
         });
     }
 
     void close() {
         walker.shutdown();
+    }
+
+    /** Result of an off-thread file read. */
+    sealed interface FileRead {
+        record Ok(String text, LineEnding lineEnding) implements FileRead {}
+
+        record BadUtf8() implements FileRead {}
+
+        record IoError() implements FileRead {}
+
+        static FileRead ok(String text, LineEnding ending) {
+            return new Ok(text, ending);
+        }
+
+        static FileRead badUtf8() {
+            return new BadUtf8();
+        }
+
+        static FileRead ioError() {
+            return new IoError();
+        }
     }
 }

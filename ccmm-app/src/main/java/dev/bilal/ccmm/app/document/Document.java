@@ -4,11 +4,14 @@ import java.util.Objects;
 
 /**
  * One open buffer. Relative paths use {@code /}. Hex and UI live elsewhere;
- * this type only tracks text, dirty, and edit origin.
+ * this type only tracks text, dirty, line ending, and edit origin.
  *
  * <p>Until ADR-0010 is accepted, callers should reject non-{@code .java} paths
  * with {@link #ONLY_JAVA_MESSAGE} before constructing a document. The path field
  * still accepts any string so that ADR is a one-line policy change.
+ *
+ * <p>In-memory text is always LF. {@link LineEnding} is the preference for the
+ * next save.
  */
 public final class Document {
     public static final String ONLY_JAVA_MESSAGE = "Only Java files can be opened";
@@ -16,10 +19,19 @@ public final class Document {
     private final String relativePath;
     private String text;
     private String saved;
+    private LineEnding lineEnding;
+    private LineEnding savedLineEnding;
 
     public Document(String relativePath, String text) {
+        this(relativePath, text, LineEnding.detect(text));
+    }
+
+    public Document(String relativePath, String text, LineEnding lineEnding) {
         this.relativePath = normalizePath(relativePath);
-        this.text = text == null ? "" : text;
+        this.lineEnding = lineEnding == null ? LineEnding.LF : lineEnding;
+        this.savedLineEnding = this.lineEnding;
+        String raw = text == null ? "" : text;
+        this.text = LineEnding.toLf(raw);
         this.saved = this.text;
     }
 
@@ -49,8 +61,20 @@ public final class Document {
         return text;
     }
 
+    public LineEnding lineEnding() {
+        return lineEnding;
+    }
+
+    /**
+     * Sets the ending used on the next save. Switching away from the saved
+     * ending marks the document dirty.
+     */
+    public void setLineEnding(LineEnding ending) {
+        this.lineEnding = ending == null ? LineEnding.LF : ending;
+    }
+
     public boolean dirty() {
-        return !text.equals(saved);
+        return !text.equals(saved) || lineEnding != savedLineEnding;
     }
 
     /**
@@ -69,21 +93,33 @@ public final class Document {
                     "replace bounds [" + start + ", " + end + ") for length " + text.length());
         }
         text = text.substring(0, start) + insert + text.substring(end);
-        if (origin == EditOrigin.REMOTE && text.equals(saved)) {
+        if (origin == EditOrigin.REMOTE && text.equals(saved) && lineEnding == savedLineEnding) {
             // restored to disk snapshot — not dirty
             return;
         }
         // LOCAL always recomputes; REMOTE that diverges from saved stays dirty
     }
 
-    /** Records the current text as the last disk snapshot (after load or save). */
+    /** Records the current text and line ending as the last disk snapshot. */
     public void markSaved() {
         saved = text;
+        savedLineEnding = lineEnding;
     }
 
     /** Replaces the buffer from disk and clears dirty. */
     public void reload(String diskText) {
-        text = diskText == null ? "" : diskText;
+        reload(diskText, LineEnding.detect(diskText));
+    }
+
+    public void reload(String diskText, LineEnding ending) {
+        lineEnding = ending == null ? LineEnding.LF : ending;
+        savedLineEnding = lineEnding;
+        text = LineEnding.toLf(diskText);
         saved = text;
+    }
+
+    /** Bytes to write on save (UTF-8 string with the chosen ending). */
+    public String diskText() {
+        return lineEnding.encode(text);
     }
 }
