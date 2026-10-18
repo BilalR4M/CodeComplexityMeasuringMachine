@@ -10,6 +10,7 @@ public record CommandId(String value) {
     public static final CommandId VIEW_SEARCH = new CommandId("view.search");
     public static final CommandId VIEW_OUTLINE = new CommandId("view.outline");
     public static final CommandId VIEW_SETTINGS = new CommandId("view.settings");
+    public static final CommandId VIEW_WELCOME = new CommandId("view.welcome");
     public static final CommandId QUICK_OPEN = new CommandId("quick.open");
     public static final CommandId COMMAND_PALETTE = new CommandId("command.palette");
     public static final CommandId FIND = new CommandId("edit.find");
@@ -19,6 +20,8 @@ public record CommandId(String value) {
     public static final CommandId REOPEN_TAB = new CommandId("tab.reopen");
     public static final CommandId NAV_BACK = new CommandId("nav.back");
     public static final CommandId NAV_FORWARD = new CommandId("nav.forward");
+    /** Registered by E7-T01; welcome enables Start a Session when present. */
+    public static final CommandId SESSION_START = new CommandId("session.start");
 
     public CommandId {
         if (value == null || value.isBlank()) {

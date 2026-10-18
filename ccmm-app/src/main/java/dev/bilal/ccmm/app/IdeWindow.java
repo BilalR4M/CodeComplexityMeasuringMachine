@@ -19,6 +19,7 @@ import dev.bilal.ccmm.app.editor.NavigationHistory;
 import dev.bilal.ccmm.app.editor.OpenTab;
 import dev.bilal.ccmm.app.editor.SaveClosePrompt;
 import dev.bilal.ccmm.app.editor.TabStrip;
+import dev.bilal.ccmm.app.session.RecentEntry;
 import dev.bilal.ccmm.app.session.RecentStore;
 import dev.bilal.ccmm.app.session.Session;
 import dev.bilal.ccmm.app.session.SessionStore;
@@ -26,6 +27,7 @@ import dev.bilal.ccmm.app.settings.ConfirmPrompt;
 import dev.bilal.ccmm.app.settings.Settings;
 import dev.bilal.ccmm.app.settings.SettingsPanel;
 import dev.bilal.ccmm.app.settings.SettingsStore;
+import dev.bilal.ccmm.app.welcome.WelcomeView;
 import dev.bilal.ccmm.app.workbench.ActivityBar;
 import dev.bilal.ccmm.app.workbench.ActivityView;
 import dev.bilal.ccmm.app.workbench.BottomPanel;
@@ -103,6 +105,8 @@ public final class IdeWindow {
     private final SettingsPanel settingsPanel;
     private final SessionStore sessionStore;
     private final RecentStore recentStore;
+    private final WelcomeView welcomeView;
+    private final VBox editorStack;
     private final SaveClosePrompt saveClosePrompt;
     private final ExecutorService backgroundIo = Executors.newSingleThreadExecutor(task -> {
         Thread thread = new Thread(task, "ccmm-background-io");
@@ -122,6 +126,7 @@ public final class IdeWindow {
     private boolean remoteFlushScheduled;
     private boolean syncingEditor;
     private boolean welcome = true;
+    private boolean showingWelcome;
     private List<BufferFinder.Match> findMatches = List.of();
     private int findIndex = -1;
     private int findGeneration;
@@ -208,6 +213,7 @@ public final class IdeWindow {
         this.settingsStore = Objects.requireNonNull(settingsStore);
         this.sessionStore = Objects.requireNonNull(sessionStore);
         this.recentStore = new RecentStore(settingsStore.file().getParent());
+        this.welcomeView = new WelcomeView(keymap);
         this.saveClosePrompt = Objects.requireNonNull(saveClosePrompt);
         this.settingsPanel = new SettingsPanel(settingsStore, ConfirmPrompt.dialog());
         this.settingsPanel.setOnThemeChanged(this::applySettingsTheme);
@@ -272,7 +278,10 @@ public final class IdeWindow {
         goToLineBar.setOnGo(this::goToLine);
         goToLineBar.setOnClose(goToLineBar::hide);
         breadcrumbBar.setOnPathSegment(this::revealInExplorer);
-        VBox editorStack = new VBox(
+        welcomeView.setOnOpenFolder(() -> workbench.execute(CommandId.FILE_OPEN.value()));
+        welcomeView.setOnRecent(this::openRecentProject);
+        welcomeView.setOnStartSession(() -> workbench.execute(CommandId.SESSION_START.value()));
+        editorStack = new VBox(
                 tabStrip.root(),
                 findReplaceBar.root(),
                 goToLineBar.root(),
@@ -282,11 +291,11 @@ public final class IdeWindow {
         VBox.setVgrow(editor, Priority.ALWAYS);
         workbench.setContent(RegionId.ACTIVITY, activityBar);
         workbench.setContent(RegionId.SIDE, sideBar);
-        workbench.setContent(RegionId.EDITOR, editorStack);
         workbench.setContent(RegionId.INSPECTOR, new VBox(panel, room));
         workbench.setContent(RegionId.BOTTOM, bottomPanel);
         commandPalette.setOnRun(id -> workbench.execute(id));
         keymap.install(scene, workbench);
+        showWelcome();
         editor.textProperty().addListener((obs, previous, text) -> {
             syncDocumentFromEditor(text);
             scheduleAnalysis(text);
@@ -344,6 +353,10 @@ public final class IdeWindow {
         return recentStore;
     }
 
+    public WelcomeView welcomeView() {
+        return welcomeView;
+    }
+
     /** Pinned tabs only; preview tabs are excluded from the session pin list. */
     public List<String> pinnedPaths() {
         return editorTabs.pinnedPaths();
@@ -351,6 +364,11 @@ public final class IdeWindow {
 
     public boolean isWelcome() {
         return welcome;
+    }
+
+    /** True when the editor region is showing {@link WelcomeView}. */
+    public boolean isShowingWelcome() {
+        return showingWelcome;
     }
 
     public Path projectRoot() {
@@ -472,6 +490,7 @@ public final class IdeWindow {
         workbench.setStatus("Opening…");
         welcome = false;
         projectRoot = directory;
+        showEditor();
         try {
             recentStore.rememberProject(directory);
         } catch (RuntimeException ignored) {
@@ -583,6 +602,7 @@ public final class IdeWindow {
         if (session.lastFolder() == null) {
             welcome = true;
             projectRoot = null;
+            showWelcome();
             onRestored.run();
             return;
         }
@@ -681,6 +701,7 @@ public final class IdeWindow {
     }
 
     private void showActiveTab() {
+        showEditor();
         OpenTab tab = editorTabs.active().orElse(null);
         if (tab == null) {
             document = null;
@@ -1003,6 +1024,29 @@ public final class IdeWindow {
         workbench.register(new SimpleCommand(CommandId.COMMAND_PALETTE, CommandPalette.TITLE, wb -> showCommandPalette()));
         workbench.register(new SimpleCommand(CommandId.NAV_BACK, "Go Back", wb -> navigateBack()));
         workbench.register(new SimpleCommand(CommandId.NAV_FORWARD, "Go Forward", wb -> navigateForward()));
+        workbench.register(new SimpleCommand(CommandId.VIEW_WELCOME, WelcomeView.TITLE, wb -> showWelcome()));
+    }
+
+    private void showWelcome() {
+        welcomeView.refresh(recentStore.projects(), workbench.commands());
+        workbench.setContent(RegionId.EDITOR, welcomeView.root());
+        showingWelcome = true;
+    }
+
+    private void showEditor() {
+        workbench.setContent(RegionId.EDITOR, editorStack);
+        showingWelcome = false;
+    }
+
+    private void openRecentProject(RecentEntry entry) {
+        if (entry == null) {
+            return;
+        }
+        if (entry.missing()) {
+            workbench.setStatus(WelcomeView.FOLDER_MISSING);
+            return;
+        }
+        open(entry.path());
     }
 
     private void recordNavigation() {
