@@ -2,7 +2,7 @@
 
 Desktop IDE written in Java with live code-complexity metrics (cyclomatic complexity, Halstead, maintainability index, LOC), quality gates for CI and PRs, and real-time collaboration. Windows, Linux, macOS.
 
-The previous web version lives at tag `legacy-web-v1`.
+The previous web version lives at tag `legacy-web-v1`. [CCMM](docs/legacy/CCMM.md) is its React client and Socket.IO server. [CCMM-Metrics-API](docs/legacy/CCMM-Metrics-API.md) is its Spring Boot calculator service.
 
 ## Install
 Download the installer for your OS from [Releases](https://github.com/BilalR4M/CodeComplexityMeasuringMachine/releases). Verify with `SHA256SUMS-*.txt`.
